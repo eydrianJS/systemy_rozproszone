@@ -51,7 +51,7 @@ app.post('/login', ({body}, res) => {
     const user = users.filter(({username, password}) => {
       console.log(username);
       console.log(password);
-      return (username == body.username && password == body.password)
+      return (username === body.username && password === body.password)
     });
     console.log(user);
     if(user.length > 0) {

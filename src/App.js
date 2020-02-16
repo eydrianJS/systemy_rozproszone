@@ -1,68 +1,37 @@
 import React, { useEffect, useState } from "react";
-import Navigation from './components/nav/nav';
-import './App.css';
-import Login from './components/login/login';
-import { Route } from 'react-router-dom'
-import Bank from './pages/bank/bank';
-
+import Navigation from "./components/nav/nav";
+import "./App.css";
+import Login from "./components/login/login";
+import { Route } from "react-router-dom";
+import Bank from "./pages/bank/bank";
+import { postLogin } from "./services/services";
 
 function App() {
-
-  // useEffect(() => {
-  //   fetch('http://10.1.3.235:8081/balanceAccount', {
-  //     method: 'POST',
-  //     mode: 'cors',
-  //     body: JSON.stringify({
-  //       username: '123456'
-  //     }),
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     }
-  //   }).then((res) => res.json())
-  //   .then(res => console.log(res));
-  // })
   const [login, setLogin] = useState(false);
 
-  const onChange = (e, value) => {
+  const onChange = async (e, value) => {
     e.preventDefault();
-    fetch('http://10.1.3.235:8081/login', {
-      method: 'POST',
-      mode: 'cors',
-      body: JSON.stringify({
-        username: value,
-        password: value
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then((res) => {
-      if (res.status == 200) {
-        return res.json()
-      } else {
-        alert("User doesn't exist");
-        return {};
-      }
-    })
-      .then(res => {
-        if(res.message == "Login ok") {
-          setLogin(true);
-        }
-      });
-  }
+    const login = await postLogin(value);
+    setLogin(login);
+  };
 
   const Logout = () => {
-    setLogin(false)
-  }
+    setLogin(false);
+  };
 
   return (
     <div className="App">
-      <Login onChange={onChange} login={login} logout={Logout}/>
-      <Navigation/>
-      {login? <>
-      <Route path="/bank" component={Bank}/>
-      <Route path="/shop" component={Login}/>
-      <Route path="/account" component={Login}/>
-      </>: false}
+      <Login onChange={onChange} login={login} logout={Logout} />
+      {login ? (
+        <>
+          <Navigation />
+          <Route path="/bank" component={Bank} />
+          <Route path="/shop" component={Bank} />
+          <Route path="/account" component={Bank} />
+        </>
+      ) : (
+        false
+      )}
     </div>
   );
 }
