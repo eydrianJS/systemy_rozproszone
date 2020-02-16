@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './login.css'
 
-const Login = ({onChange,logout, login}) => {
+const Login = ({onChange,logout,  login}) => {
     
     const [value, setValue] = useState('');
     

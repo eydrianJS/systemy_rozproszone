@@ -58,10 +58,11 @@ function App() {
     <div className="App">
       <Login onChange={onChange} login={login} logout={Logout}/>
       <Navigation/>
-      <Route exact path="/" component={Login}/>
+      {login? <>
       <Route path="/bank" component={Bank}/>
       <Route path="/shop" component={Login}/>
       <Route path="/account" component={Login}/>
+      </>: false}
     </div>
   );
 }
