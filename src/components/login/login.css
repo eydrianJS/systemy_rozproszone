@@ -1,0 +1,17 @@
+.login {
+    display: flex;
+    flex-direction: column;
+    align-items: ;
+}
+
+.login-input{
+    width: 200px;
+    padding: 10px 0;
+}
+
+.login-button {
+    padding: 10px 0;
+    width: 150px;
+    text-transform: uppercase;
+    font-size: 16px;
+} 
