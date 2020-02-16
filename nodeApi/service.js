@@ -1,15 +1,16 @@
-const mongo = require("mongodb").MongoClient;
-const express = require("express");
+const express = require('express');
+const bodyParser = require('body-parser');
+const users = [
+  {
+    name: "Jan",
+    surname: "Kowalski",
+    username: "123456",
+    password: "123456",
+    accountBalance: 1000                                   
+  }
+];
+// create express app
 const app = express();
-const server = require("http").Server(app);
-const io = require("socket.io")(server);
-const bodyParser = require("body-parser");
-const ObjectID = require('mongodb').ObjectID;
-
-const router = express.Router();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -17,79 +18,69 @@ app.use((req, res, next) => {
   next();
 });
 
-let db, m;
-const url = "mongodb://localhost:27017";
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
 
-const main = () => {
-  mongo.connect(
-    url,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    },
-    (err, client) => {
-      if (err) {
-        return;
-      }
-      db = client.db("Main"); //MongoClient.connect();
-      m = name => db.collection(name);
-    }
-  );
-};
-main();
+// parse requests of content-type - application/json
+app.use(bodyParser.json())
 
-router
-  .get("/", async (req, res) => {
+// define a simple route
+app.get('/', (req, res) => {
+    res.json({"message": "Welcome to EasyNotes application. Take notes quickly. Organize and keep track of all your notes."});
+});
+
+app.post('/addUser', ({body}, res) => {
     try {
-      let total = await db
-        .collection("timer")
-        .find({})
-        .toArray();
-      return res.json(total);
-    } catch (e) {
-      res.json(e);
-    }
-  })
-  .put("/",async (req, res) => {
-    try {
-        let query = { "_id":  new ObjectID("5df3411dfc110efe30d47891")} ;
-        let newVal = {$set: {creator: "new Creator", startTime: new Date().toISOString()}};
-        let total = await db
-          .collection("timer")
-          .updateOne(query,newVal , function(err, res) {
-            if (err) throw err;
-            console.log(res.result.nModified + " document(s) updated");
-          });
-      } catch (e) {
-        res.json(e);
+      const user  = {
+        username: body.username,
+        password: body.password
       }
-    res.send("Update the book");
-  });
-
-app.use("/", router);
-
-io.on("connection", socket => {
-  const { id } = socket.client;
-  socket.on("openDialog", async (openDialog) => {
-    let newState = {...openDialog}
-    if(openDialog.agree) {
-      let query = { "_id":  new ObjectID("5df3411dfc110efe30d47891")} ;
-      const set = {creator: "new Creator", startTime: new Date().toISOString()}
-      let newVal = {$set: set};
-      let total = await db
-        .collection("timer")
-        .updateOne(query,newVal , function(err, res) {
-          if (err) throw err;
-          console.log(res.result.nModified + " document(s) updated");
-        });
-        newState =  {...newState, ...set};
+      users.push(user);
+      console.log(user);
+      res.json({"message": "User ok" });
+    } catch (e) {      
     }
-    console.log(newState);
-    io.emit("openDialog", newState);
-  });
+});
+
+app.post('/login', ({body}, res) => {
+  try {
+    const user = users.filter(({username, password}) => {
+      console.log(username);
+      console.log(password);
+      return (username == body.username && password == body.password)
+    });
+    console.log(user);
+    if(user.length > 0) {
+      res.json({"message": "Login ok" });
+    }
+    res.sendStatus(404)
+  } catch (e) {      
+  }
 });
 
 
-server.listen(8081, () => {
-  console.log("Example app listening on port 8000!");
+app.post('/balanceAccount', ({body}, res) => {
+    try {
+      console.log(body);
+      const user = users.filter(({ username }) => {
+        return body.username == username;
+      })
+      res.json({"accountBalance": user[0].accountBalance });
+    } catch (e) {      
+    }
+});
+
+app.post('/pay', ({body}, res) => {
+  try {
+    const user = users.filter(({ username }) => {
+      return body.username == username;
+    })
+    res.json({"accountBalance": user[0].accountBalance });
+  } catch (e) {      
+  }
+});
+
+// listen for requests
+app.listen(8081, () => {
+    console.log("Server is listening on port 8081");
 });
