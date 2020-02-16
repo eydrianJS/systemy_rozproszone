@@ -1,17 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+var cors = require('cors')
 const users = [
   {
     name: "Jan",
     surname: "Kowalski",
     username: "123456",
     password: "123456",
-    accountBalance: 1000                                   
+    accountBalance: 1000,
+    accountNumber: "12345678908765544",
+    cardNumber: "12312312"                          
   }
 ];
 // create express app
 const app = express();
 
+app.use(cors())
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "*");
@@ -65,17 +69,81 @@ app.post('/balanceAccount', ({body}, res) => {
       const user = users.filter(({ username }) => {
         return body.username == username;
       })
-      res.json({"accountBalance": user[0].accountBalance });
+      if(user.length > 0) {        
+        res.json({"accountBalance": user[0].accountBalance });
+      }
+      res.sendStatus(404)
     } catch (e) {      
     }
 });
 
 app.post('/pay', ({body}, res) => {
   try {
-    const user = users.filter(({ username }) => {
-      return body.username == username;
+    users.map((user) => {
+      if (body.username == user.username) {
+        if (user.accountBalance < body.transferAmount) {
+          res.json({"message": "Insufficient account balance" })
+        }  else {
+          user.accountBalance -= body.transferAmount;
+          res.json({"message": "Trasfer ok", "accountBalance":  user.accountBalance})
+        }
+      } 
+      return user;
     })
-    res.json({"accountBalance": user[0].accountBalance });
+
+    res.sendStatus(404)
+  } catch (e) {      
+  }
+});
+
+app.post('/transfer', ({body}, res) => {
+  try {
+    users.map((user) => {
+      if (body.username == user.username) {
+        if (user.accountBalance < body.transferAmount) {
+          res.json({"message": "Insufficient account balance" })
+        }  else {
+          user.accountBalance -= body.transferAmount;
+          res.json({"message": "Trasfer ok", "accountBalance":  user.accountBalance})
+        }
+      } 
+      return user;
+    })
+    res.sendStatus(404)
+  } catch (e) {      
+  }
+});
+
+app.post('/payoff', ({body}, res) => {
+  try {
+    users.map((user) => {
+      if (body.username == user.username) {
+        if (user.accountBalance < body.transferAmount) {
+          res.json({"message": "Insufficient account balance" })
+        }  else {
+          user.accountBalance -= body.transferAmount;
+          res.json({"message": "Trasfer ok", "accountBalance":  user.accountBalance})
+        }
+      } 
+      return user;
+    })
+
+    res.sendStatus(404)
+  } catch (e) {      
+  }
+});
+
+app.post('/payment', ({body}, res) => {
+  try {
+    users.map((user) => {
+      if (body.username == user.username) {
+        user.accountBalance += body.transferAmount;
+        res.json({"message": "Trasfer ok", "accountBalance":  user.accountBalance})
+      } 
+      return user;
+    })
+
+    res.sendStatus(404)
   } catch (e) {      
   }
 });
