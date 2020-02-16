@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Navigation from "./components/nav/nav";
 import "./App.css";
 import Login from "./components/login/login";

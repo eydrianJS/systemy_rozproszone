@@ -1,22 +1,28 @@
 const API = "http://192.168.0.12:8081";
+const CONFIG = {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  }
+};
 
-export const postLogin = value => {
-  return fetch(`${API}/login`, {
-    method: "POST",
-    mode: "cors",
-    body: JSON.stringify({
-      username: value.username,
-      password: value.password
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-    .then(res => {
-      if (res.status === 200) {
+const checkRespone = (res) => {
+    if (res.status === 200) {
         return res.json();
       }
       return {};
+}
+
+export const postLogin = value => {
+  return fetch(`${API}/login`, {
+    ...CONFIG,
+    body: JSON.stringify({
+      username: value.username,
+      password: value.password
+    })
+  })
+    .then(res => {
+      return checkRespone(res);
     })
     .then(res => {
       if (res.message === "Login ok") {
