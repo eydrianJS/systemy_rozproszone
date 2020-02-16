@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import Navigation from './components/nav/nav';
 import './App.css';
 import Login from './components/login/login';
-
+import { Route } from 'react-router-dom'
+import Bank from './pages/bank/bank';
 
 
 function App() {
@@ -56,7 +57,11 @@ function App() {
   return (
     <div className="App">
       <Login onChange={onChange} login={login} logout={Logout}/>
-      <Navigation />
+      <Navigation/>
+      <Route exact path="/" component={Login}/>
+      <Route path="/bank" component={Bank}/>
+      <Route path="/shop" component={Login}/>
+      <Route path="/account" component={Login}/>
     </div>
   );
 }
