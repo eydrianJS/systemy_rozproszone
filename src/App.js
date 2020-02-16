@@ -7,11 +7,19 @@ import Login from './components/login/login';
 
 function App() {
 
-  useEffect(() => {
-    fetch('http://10.1.3.235:8081/balanceAccount', {
-      username: '123456'
-    }).then((res) => console.log(res.json()))
-  })
+  // useEffect(() => {
+  //   fetch('http://10.1.3.235:8081/balanceAccount', {
+  //     method: 'POST',
+  //     mode: 'cors',
+  //     body: JSON.stringify({
+  //       username: '123456'
+  //     }),
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     }
+  //   }).then((res) => res.json())
+  //   .then(res => console.log(res));
+  // })
 
   return (
     <div className="App">
