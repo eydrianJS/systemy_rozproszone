@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 /nodeApi/node_modules
+/atm/node_modules
+/transfer/node_modules
+/card/node_modules
 /.pnp
 .pnp.js
 
