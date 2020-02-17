@@ -29,11 +29,7 @@ const Login = ({ onChange, logout, login }) => {
     onChange(e, value);
   };
 
-  return login ? (
-    <button className="login-button" type="submit" onClick={logout}>
-      Loguot
-    </button>
-  ) : (
+  return !login && (
     <form className="login" onSubmit={e => change(e)}>
       <h1 className="login-title">Zaloguj się</h1>
       <input

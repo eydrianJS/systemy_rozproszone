@@ -4,12 +4,15 @@ import "./App.css";
 import Login from "./components/login/login";
 import { Route } from "react-router-dom";
 import Bank from "./pages/bank/bank";
+import Shop from "./pages/shop/shop";
+import AccountBalance from './components/accountBalance/accountBalance';
+import Account from './pages/account/account';
 import { postLogin } from "./services/services";
 
 function App() {
   const [login, setLogin] = useState(false);
 
-  const onChange = async (e, value) => {
+    const onChange = async (e, value) => {
     e.preventDefault();
     const login = await postLogin(value);
     setLogin(login);
@@ -24,10 +27,11 @@ function App() {
       <Login onChange={onChange} login={login} logout={Logout} />
       {login ? (
         <>
-          <Navigation />
-          <Route path="/bank" component={Bank} />
-          <Route path="/shop" component={Bank} />
-          <Route path="/account" component={Bank} />
+          <Navigation login={login} logout={Logout}/>
+          <AccountBalance/>
+          <Route path="/bank" render={() => <Bank />} />
+          <Route path="/shop" component={Shop} />
+          <Route path="/account" component={Account} />
         </>
       ) : (
         false

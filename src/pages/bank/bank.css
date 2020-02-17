@@ -1,26 +1,48 @@
 
 .bank-container{
+    margin-top: 50px;
+    width: 85%;
     display: flex;
-    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
 }
 
-.bank-input{
-    display: block;
-    margin: 0 auto;
-    padding: 10px;
-    width: 150px;
-    outline: none;
-    border: 1px solid #000;
-    border-radius: 5px;
+.bank-button-container{
+    display: flex;
 }
 
 .bank-button{
+    min-width: 150px;
+    background: #000;
     border: 1px solid #000;
+    color: #fff;
     outline: none;
     margin: 10px 10px;
-    padding: 10px 0;
+    padding: 15px 10px;
     width: 120px;
     text-transform: uppercase;
     font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease-out;
+}
+
+.bank-input{
+    margin: 10px;
+    padding: 10px;
+    width: 300px;
+    outline: none;
+    border: 1px solid #000;
+    border-radius: 2px;
+    font-size: 20px;
+}
+.bank-title{
+    margin-bottom: 15px;
+}
+
+
+
+.bank-button:hover{
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
 }

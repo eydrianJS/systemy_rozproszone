@@ -1,4 +1,4 @@
-const API = "http://192.168.0.12:8081";
+const API = "http://172.18.109.193:8081";
 const CONFIG = {
   method: "POST",
   headers: {
@@ -6,7 +6,7 @@ const CONFIG = {
   }
 };
 
-const checkRespone = (res) => {
+const checkResponse = (res) => {
     if (res.status === 200) {
         return res.json();
       }
@@ -22,7 +22,7 @@ export const postLogin = value => {
     })
   })
     .then(res => {
-      return checkRespone(res);
+      return checkResponse(res);
     })
     .then(res => {
       if (res.message === "Login ok") {
