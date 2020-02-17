@@ -36,6 +36,9 @@ io.on("connection", function(socket) {
     socket.on("serverWithdrawalResponse", function(msg) {
       io.emit("accountBallance", msg);
     });
+    socket.on("accountBallanceActualisation", function(msg) {
+      io.emit("accountBallance", msg);
+    });
     socket.on("disconnect", () => {
         console.log("disc")
     })

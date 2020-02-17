@@ -41,14 +41,18 @@ atm.on("serverLogin", msg => {
 atm.on("serverDeposite", msg => {
   try {
     users[0].accountBalance += parseFloat(msg.transferAmount);
-    atm.emit("serverDepositeResponse", users[0]);
+    atm.emit("accountBallanceActualisation", users[0]);
+    card.emit("accountBallanceActualisation", users[0]);
+    tranfers.emit("accountBallanceActualisation", users[0]);
   } catch (e) {}
 });
 
 atm.on("serverWithdrawal", msg => {
   try {
     users[0].accountBalance -= parseFloat(msg.transferAmount);
-    atm.emit("serverWithdrawalResponse", users[0]);
+    atm.emit("accountBallanceActualisation", users[0]);
+    card.emit("accountBallanceActualisation", users[0]);
+    tranfers.emit("accountBallanceActualisation", users[0]);
   } catch (e) {}
 });
 

@@ -22,7 +22,9 @@ io.on("connection", function(socket) {
   socket.on("serverLoginResponse", function(msg) {
     io.emit("loginResponse", msg);
   });
-
+  socket.on("accountBallanceActualisation", function(msg) {
+    io.emit("accountBallance", msg);
+  });
 });
 
 server.listen(8084, () => {
