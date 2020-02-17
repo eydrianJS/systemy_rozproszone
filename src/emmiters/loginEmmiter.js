@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { postLogin } from "./../../services/services";
+import { postLogin } from "./../services/services";
 let socket;
 
-const useDefaultEmmiter = () => {
+const useDefaultEmmiter = (port) => {
   const [login, setLogin] = useState(false);
   const [information, setInformation] = useState({})
 
@@ -17,7 +17,7 @@ const useDefaultEmmiter = () => {
   };
 
   useEffect(() => {
-    socket = io.connect("http://192.168.0.12:8084/");
+    socket = io.connect(`http://192.168.0.12:${port}/`);
     return () => {
       socket.disconnect();
     };
@@ -30,7 +30,6 @@ const useDefaultEmmiter = () => {
       }
     });
     socket.on("accountBallance", (msg) => {
-      console.log(msg);
       setInformation(msg)
     })
   }, []);

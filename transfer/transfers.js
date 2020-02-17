@@ -23,18 +23,6 @@ io.on("connection", function(socket) {
     io.emit("loginResponse", msg);
   });
 
-  socket.on("deposit", function(msg) {
-    io.emit("serverDeposite", { ...msg, id: socket.id });
-  });
-  socket.on("serverDepositeResponse", function(msg) {
-    io.emit("accountBallance", msg);
-  });
-  socket.on("withdrawal", function(msg) {
-    io.emit("serverWithdrawal", { ...msg, id: socket.id });
-  });
-  socket.on("serverWithdrawalResponse", function(msg) {
-    io.emit("accountBallance", msg);
-  });
 });
 
 server.listen(8084, () => {

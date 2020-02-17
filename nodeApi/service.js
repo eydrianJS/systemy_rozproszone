@@ -5,7 +5,9 @@ var app = express();
 var server = http.createServer(app);
 
 var ioSerwer = require("socket.io-client");
-var socket = ioSerwer.connect("http://192.168.0.12:8084", { reconnect: true });
+var tranfers = ioSerwer.connect("http://192.168.0.12:8084", { reconnect: true });
+var card = ioSerwer.connect("http://192.168.0.12:8083", { reconnect: true });
+var atm = ioSerwer.connect("http://192.168.0.12:8085", { reconnect: true });
 
 const users = [
   {
@@ -27,41 +29,56 @@ app.use((req, res, next) => {
   next();
 });
 
-socket.on("serverLogin", msg => {
+atm.on("serverLogin", msg => {
   try {
     const user = users.filter(({ username, password }) => {
       return username === msg.username && password === msg.password;
     });
-    socket.emit("serverLoginResponse", user);
+    atm.emit("serverLoginResponse", user);
   } catch (e) {}
 });
 
-socket.on("serverDeposite", msg => {
+atm.on("serverDeposite", msg => {
   try {
     users[0].accountBalance += parseFloat(msg.transferAmount);
-    socket.emit("serverDepositeResponse", users[0]);
+    atm.emit("serverDepositeResponse", users[0]);
   } catch (e) {}
 });
 
-socket.on("serverWithdrawal", msg => {
+atm.on("serverWithdrawal", msg => {
   try {
     users[0].accountBalance -= parseFloat(msg.transferAmount);
-    socket.emit("serverWithdrawalResponse", users[0]);
+    atm.emit("serverWithdrawalResponse", users[0]);
   } catch (e) {}
 });
 
-// io.emit("login", { acc: "Transfer"});
-// io.on("connection", function(socket) {
-//     // console.log(socket.id);
-//   socket.on("login", function(msg) {
-//   });
-//   socket.on("pay", function(msg) {
-//     io.emit("login", { acc: "Transfer"});
-//   });
-// });
+
+
+card.on("serverLogin", msg => {
+  try {
+    const user = users.filter(({ username, password }) => {
+      return username === msg.username && password === msg.password;
+    });
+    card.emit("serverLoginResponse", user);
+  } catch (e) {}
+});
+
+
+
+tranfers.on("serverLogin", msg => {
+  try {
+    console.log("DUPA");
+    const user = users.filter(({ username, password }) => {
+      return username === msg.username && password === msg.password;
+    });
+    tranfers.emit("serverLoginResponse", user);
+  } catch (e) {}
+});
+
+
 
 server.listen(8081, () => {
-  console.log("Server is listening on port 8084");
+  console.log("Server is listening on port 8081");
 });
 
 // const express = require("express");

@@ -14,15 +14,15 @@ app.use((req, res, next) => {
   next();
 });
 
-
 io.on("connection", function(socket) {
   socket.on("login", function(msg) {
-    console.log(msg + "a");
-    
-    io.emit("login", { acc: "Card"});
+    io.emit("serverLogin", { ...msg, id: socket.id });
+  });
+  socket.on("serverLoginResponse", function(msg) {
+    io.emit("loginResponse", msg);
   });
 });
 
 server.listen(8083, () => {
-  console.log("Server is listening on port 8081");
+  console.log("Server is listening on port 8083");
 });
