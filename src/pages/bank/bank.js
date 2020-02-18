@@ -25,8 +25,9 @@ const Bank = ({ accountBalance }) => {
       {!login ? (
         <Login onChange={onChange} login={login} logout={Logout} />
       ) : (
-        <div className="bank-container">
+        <div>
           <AccountBalance information={information}/>
+          <div className="bank-container">
           <h1 className="bank-title">Wypłać/Wpłać środki na swoje konto</h1>
           <input
             className="bank-input"
@@ -40,6 +41,8 @@ const Bank = ({ accountBalance }) => {
             <button className="bank-button" onClick={e => handleWithdrawal(e)}>Wypłać</button>
           </div>
         </div>
+        </div>
+        
       )}
     </>
   );

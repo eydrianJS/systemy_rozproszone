@@ -5,9 +5,9 @@ var app = express();
 var server = http.createServer(app);
 
 var ioSerwer = require("socket.io-client");
-var tranfers = ioSerwer.connect("http://192.168.0.12:8084", { reconnect: true });
-var card = ioSerwer.connect("http://192.168.0.12:8083", { reconnect: true });
-var atm = ioSerwer.connect("http://192.168.0.12:8085", { reconnect: true });
+var tranfers = ioSerwer.connect("http://172.18.109.193:8084", { reconnect: true });
+var card = ioSerwer.connect("http://172.18.109.193:8083", { reconnect: true });
+var atm = ioSerwer.connect("http://172.18.109.193:8085", { reconnect: true });
 
 const users = [
   {

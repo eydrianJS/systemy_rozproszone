@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./account.css";
+import Button from '../../components/UI/button';
 import Login from "./../../components/login/login";
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
@@ -29,9 +30,7 @@ const Account = () => {
             value={accountValue}
             onChange={handleChangeAccount}
           />
-          <button className="account-button" onClick={() => {}}>
-            Przelej
-          </button>
+          <Button>przelej</Button>
         </div>
       )}{" "}
     </>

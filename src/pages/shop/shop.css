@@ -2,7 +2,21 @@
     margin-top: 50px;
 }
 
+.shop-box{
+    display: flex;
+}
+
 .shop-list-item{
     padding: 5px 0;
     font-size: 20px;
+}
+
+.shop-input{
+    margin: 10px 0px;
+    padding: 10px;
+    width: 300px;
+    outline: none;
+    border: 1px solid #000;
+    border-radius: 2px;
+    font-size: 18px;
 }
