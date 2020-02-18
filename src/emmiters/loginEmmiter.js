@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { postLogin } from "./../services/services";
+import api from "../config"
 let socket;
 
 const useDefaultEmmiter = (port) => {
@@ -17,7 +18,11 @@ const useDefaultEmmiter = (port) => {
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     socket = io.connect(`http://172.18.109.193:${port}/`);
+=======
+    socket = io.connect(`${api}:${port}/`);
+>>>>>>> 6b0631a06a5f1f8402c31ee1aa12cd34bc4aed46
     return () => {
       socket.disconnect();
     };
