@@ -23,7 +23,13 @@
     "socket.io-client": "^2.3.0"
   },
   "scripts": {
-    "start": "set PORT=8002 && react-scripts start",
+    "backend-start": " .//.js",
+    "client": "set PORT=8002 && react-scripts start",
+    "server": "cd nodeApi && nodemon service.js",
+    "atm": "cd atm && nodemon atm.js",
+    "card": "cd card && nodemon card.js",
+    "transfer": "cd transfer && nodemon transfers.js",
+    "start": "concurrently - kill-others \"npm run server\" \"npm run atm\" \"npm run card\" \"npm run transfer\" \"npm run client\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
