@@ -5,7 +5,7 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://10.102.40.12";
+const api = "http://192.168.0.12";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
@@ -34,17 +34,66 @@ const main = () => {
 };
 main();
 
-const users = [
-  {
-    name: "Jan",
-    surname: "Kowalski",
-    username: "1",
-    password: "1",
-    accountBalance: 1000,
-    accountNumber: "48 1082 5132 0000 1202 4134 3905",
-    cardNumber: "12312312"
+const loginUsers = [];
+const requestQueue = [];
+
+const sendToQue = (name, ...params) => {
+  requestQueue.push({
+    name,
+    params
+  });
+  if (requestQueue.length === 1) {
+    name(...params);
   }
-];
+};
+
+const deposite = async (user, value) => {
+  let query = { _id: new ObjectID(loginUsers[user]._id) };
+  loginUsers[user] = await db.collection("users").findOne(query);
+  loginUsers[user].accountBalance =
+    loginUsers[user].accountBalance + parseFloat(value);
+  let newVal = { $set: loginUsers[user] };
+  let total = await db
+    .collection("users")
+    .updateOne(query, newVal, function(err, res) {
+      if (err) throw err;
+      console.log(res.result.nModified + " document(s) updated");
+    });
+  requestQueue.shift();
+  if (requestQueue.length !== 0) {
+    requestQueue[0].name(...requestQueue[0].params);
+  }
+  atm.emit("accountBallanceUpdate", loginUsers[user]);
+  card.emit("accountBallanceUpdate", loginUsers[user]);
+  tranfers.emit("accountBallanceUpdate", loginUsers[user]);
+};
+
+const withDrawal = async (user, value) => {
+  let query = { _id: new ObjectID(loginUsers[user]._id) };
+  loginUsers[user] = await db.collection("users").findOne(query);
+  console.log(loginUsers[user].accountBalance);
+  if (loginUsers[user].accountBalance < value) {
+    console.log("dupa");
+    requestQueue.shift();
+    if (requestQueue.length !== 0) {
+      requestQueue[0].name(...requestQueue[0].params);
+    }
+    return;
+  }
+  loginUsers[user].accountBalance =
+    loginUsers[user].accountBalance - parseFloat(value);
+  let newVal = { $set: loginUsers[user] };
+  let total = await db
+    .collection("users")
+    .updateOne(query, newVal, function(err, res) {
+      if (err) throw err;
+      console.log(res.result.nModified + " document(s) updated");
+    });
+  requestQueue.shift();
+  atm.emit("accountBallanceUpdate", loginUsers[user]);
+  card.emit("accountBallanceUpdate", loginUsers[user]);
+  tranfers.emit("accountBallanceUpdate", loginUsers[user]);
+};
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -57,44 +106,46 @@ app.use((req, res, next) => {
 atm.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
-    .findOne({"username": msg.username, "password": msg.password});
-    atm.emit("serverLoginResponse", user);
+    .findOne({ username: msg.username, password: msg.password });
+  if (user) {
+    loginUsers[msg.id] = user;
+  }
+  atm.emit("serverLoginResponse", user);
 });
 
 atm.on("serverDeposite", msg => {
   try {
-    users[0].accountBalance += parseFloat(msg.transferAmount);
-    atm.emit("accountBallanceUpdate", users[0]);
-    card.emit("accountBallanceUpdate", users[0]);
-    tranfers.emit("accountBallanceUpdate", users[0]);
+    sendToQue(deposite, msg.id, msg.transferAmount);
   } catch (e) {}
 });
 
 atm.on("serverWithdrawal", msg => {
   try {
-    users[0].accountBalance -= parseFloat(msg.transferAmount);
-    atm.emit("accountBallanceUpdate", users[0]);
-    card.emit("accountBallanceUpdate", users[0]);
-    tranfers.emit("accountBallanceUpdate", users[0]);
+    sendToQue(withDrawal, msg.id, msg.transferAmount);
   } catch (e) {}
 });
 
-card.on("serverLogin", msg => {
+card.on("serverLogin", async msg => {
   try {
-    const user = users.filter(({ username, password }) => {
-      return username === msg.username && password === msg.password;
-    });
+    let user = await db
+      .collection("users")
+      .findOne({ username: msg.username, password: msg.password });
     card.emit("serverLoginResponse", user);
+    if (user) {
+      loginUsers[msg.id] = user;
+    }
   } catch (e) {}
 });
 
-tranfers.on("serverLogin", msg => {
+tranfers.on("serverLogin", async msg => {
   try {
-    console.log("DUPA");
-    const user = users.filter(({ username, password }) => {
-      return username === msg.username && password === msg.password;
-    });
+    let user = await db
+      .collection("users")
+      .findOne({ username: msg.username, password: msg.password });
     tranfers.emit("serverLoginResponse", user);
+    if (user) {
+      loginUsers[msg.id] = user;
+    }
   } catch (e) {}
 });
 

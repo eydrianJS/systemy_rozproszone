@@ -16,7 +16,6 @@ app.use((req, res, next) => {
 
 io.on("connection", function(socket) {
   socket.on("login", function(msg) {
-    console.log(socket.id);
     io.emit("serverLogin", { ...msg, id: socket.id });
   });
   socket.on("serverLoginResponse", function(msg) {
