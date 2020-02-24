@@ -47,18 +47,34 @@ const sendToQue = (name, ...params) => {
   }
 };
 
-const deposite = async (user, value) => {
-  let query = { _id: new ObjectID(loginUsers[user]._id) };
-  loginUsers[user] = await db.collection("users").findOne(query);
-  loginUsers[user].accountBalance =
-    loginUsers[user].accountBalance + parseFloat(value);
-  let newVal = { $set: loginUsers[user] };
+const saveToHistory = async (historyId, value, saldoAfter, user, kindOfTransaction) => {
+  let query = { _id: new ObjectID(historyId) };
   let total = await db
-    .collection("users")
+    .collection("history")
+    .updateOne(query, { $push: { "transactions": {
+      date: new Date().toISOString(),
+      value: value,
+      saldoAfter: saldoAfter,
+      user: user,
+      kindOfTransaction: kindOfTransaction
+    }} }, function(err, res) {
+      if (err) throw err;
+      console.log(res.result.nModified + " document(s) updated");
+    });
+}
+
+const deposite = async (user, value) => {
+  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
+  let account = await db.collection("accounts").findOne(query);
+  loginUsers[user].accountBalance = account.accountBalance + parseFloat(value);
+  let newVal = { $set: { accountBalance: loginUsers[user].accountBalance } };
+  let total = await db
+    .collection("accounts")
     .updateOne(query, newVal, function(err, res) {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
     });
+    saveToHistory(account.history, value, loginUsers[user].accountBalance, loginUsers[user]._id, "deposite");
   requestQueue.shift();
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
@@ -69,10 +85,10 @@ const deposite = async (user, value) => {
 };
 
 const withDrawal = async (user, value) => {
-  let query = { _id: new ObjectID(loginUsers[user]._id) };
-  loginUsers[user] = await db.collection("users").findOne(query);
-  console.log(loginUsers[user].accountBalance);
-  if (loginUsers[user].accountBalance < value) {
+  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
+  let account = await db.collection("accounts").findOne(query);
+
+  if (account.accountBalance < value) {
     console.log("dupa");
     requestQueue.shift();
     if (requestQueue.length !== 0) {
@@ -80,15 +96,15 @@ const withDrawal = async (user, value) => {
     }
     return;
   }
-  loginUsers[user].accountBalance =
-    loginUsers[user].accountBalance - parseFloat(value);
-  let newVal = { $set: loginUsers[user] };
+  loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
+  let newVal = { $set: { accountBalance: loginUsers[user].accountBalance } };
   let total = await db
-    .collection("users")
+    .collection("accounts")
     .updateOne(query, newVal, function(err, res) {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
     });
+    saveToHistory(account.history, value, loginUsers[user].accountBalance, loginUsers[user]._id, "withDrawal");
   requestQueue.shift();
   atm.emit("accountBallanceUpdate", loginUsers[user]);
   card.emit("accountBallanceUpdate", loginUsers[user]);
@@ -107,10 +123,17 @@ atm.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
     .findOne({ username: msg.username, password: msg.password });
+  let account = await db
+    .collection("accounts")
+    .findOne({ _id: new ObjectID(user.accounts[0]) });
+  let history = await db
+    .collection("history")
+    .findOne({ _id: new ObjectID(account.history) });
   if (user) {
-    loginUsers[msg.id] = user;
+    loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  atm.emit("serverLoginResponse", user);
+  console.log(loginUsers);
+  atm.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
 atm.on("serverDeposite", msg => {
@@ -126,27 +149,37 @@ atm.on("serverWithdrawal", msg => {
 });
 
 card.on("serverLogin", async msg => {
-  try {
-    let user = await db
-      .collection("users")
-      .findOne({ username: msg.username, password: msg.password });
-    card.emit("serverLoginResponse", user);
-    if (user) {
-      loginUsers[msg.id] = user;
-    }
-  } catch (e) {}
+  let user = await db
+    .collection("users")
+    .findOne({ username: msg.username, password: msg.password });
+  let account = await db
+    .collection("accounts")
+    .findOne({ _id: new ObjectID(user.accounts[0]) });
+  let history = await db
+    .collection("history")
+    .findOne({ _id: new ObjectID(account.history) });
+  if (user) {
+    loginUsers[msg.id] = { ...user, ...account, ...history };
+  }
+  console.log(loginUsers);
+  card.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
 tranfers.on("serverLogin", async msg => {
-  try {
-    let user = await db
-      .collection("users")
-      .findOne({ username: msg.username, password: msg.password });
-    tranfers.emit("serverLoginResponse", user);
-    if (user) {
-      loginUsers[msg.id] = user;
-    }
-  } catch (e) {}
+  let user = await db
+    .collection("users")
+    .findOne({ username: msg.username, password: msg.password });
+  let account = await db
+    .collection("accounts")
+    .findOne({ _id: new ObjectID(user.accounts[0]) });
+  let history = await db
+    .collection("history")
+    .findOne({ _id: new ObjectID(account.history) });
+  if (user) {
+    loginUsers[msg.id] = { ...user, ...account, ...history };
+  }
+  console.log(loginUsers);
+  tranfers.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
 server.listen(8081, () => {
