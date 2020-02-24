@@ -1,13 +1,38 @@
 const express = require("express");
 var cors = require("cors");
 var http = require("http");
+const mongo = require("mongodb").MongoClient;
+const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
+const api = "http://10.102.40.12";
 
 var ioSerwer = require("socket.io-client");
-var tranfers = ioSerwer.connect("http://172.18.109.193:8084", { reconnect: true });
-var card = ioSerwer.connect("http://172.18.109.193:8083", { reconnect: true });
-var atm = ioSerwer.connect("http://172.18.109.193:8085", { reconnect: true });
+var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
+var card = ioSerwer.connect(`${api}:8083`, { reconnect: true });
+var atm = ioSerwer.connect(`${api}:8085`, { reconnect: true });
+
+let db, m;
+const url = "mongodb://localhost:27017";
+
+const main = () => {
+  mongo.connect(
+    url,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, client) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      db = client.db("Bank"); //MongoClient.connect();
+      m = name => db.collection(name);
+    }
+  );
+};
+main();
 
 const users = [
   {
@@ -29,13 +54,11 @@ app.use((req, res, next) => {
   next();
 });
 
-atm.on("serverLogin", msg => {
-  try {
-    const user = users.filter(({ username, password }) => {
-      return username === msg.username && password === msg.password;
-    });
+atm.on("serverLogin", async msg => {
+  let user = await db
+    .collection("users")
+    .findOne({"username": msg.username, "password": msg.password});
     atm.emit("serverLoginResponse", user);
-  } catch (e) {}
 });
 
 atm.on("serverDeposite", msg => {
@@ -56,8 +79,6 @@ atm.on("serverWithdrawal", msg => {
   } catch (e) {}
 });
 
-
-
 card.on("serverLogin", msg => {
   try {
     const user = users.filter(({ username, password }) => {
@@ -66,8 +87,6 @@ card.on("serverLogin", msg => {
     card.emit("serverLoginResponse", user);
   } catch (e) {}
 });
-
-
 
 tranfers.on("serverLogin", msg => {
   try {
@@ -78,8 +97,6 @@ tranfers.on("serverLogin", msg => {
     tranfers.emit("serverLoginResponse", user);
   } catch (e) {}
 });
-
-
 
 server.listen(8081, () => {
   console.log("Server is listening on port 8081");

@@ -25,9 +25,9 @@ const useDefaultEmmiter = (port) => {
   }, []);
   useEffect(() => {
     socket.on("loginResponse", value => {
-      if (value.length > 0) {
+      if (value !== null) {
         setLogin(true);
-        setInformation(value[0]);
+        setInformation(value);
       }
     });
     socket.on("accountBallance", (msg) => {
