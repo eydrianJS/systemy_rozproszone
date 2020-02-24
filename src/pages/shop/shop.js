@@ -11,15 +11,9 @@ let formattedDate = currentDate.getDate() + '-' + currentDate.getMonth() + '-' +
 
 const Shop = props => {
   const [amountValue, setAmount] = useState('');
-  const [historyTransaction, setHistoryTransaction] = useState([]);
+  
   const { login, onChange, Logout, information, socket } = useLoginEmmiter("8083");
   
-
-
-  // const transactions = array.map(val => (
-  //   <li className="shop-list-item">{val} PLN</li>
-  // ));
-
   const ID = () => {
     return '_' + Math.random().toString(36).substr(2, 9);
   }
@@ -29,11 +23,11 @@ const Shop = props => {
   }
 
   const handleCardTransfer = e => {
-      setHistoryTransaction(historyTransaction.concat({id: ID(), date: formattedDate, cardNumber: information.cardNumber, type: 'Płatność kartą', ammount: amountValue, accountBalance: information.accountBalance}))
-      // socket.emit('deposit', {transferAmount: amountValue});
+      // setHistoryTransaction(historyTransaction.concat({id: ID(), date: formattedDate, cardNumber: information.cardNumber, type: 'Płatność kartą', ammount: amountValue, accountBalance: information.accountBalance}))
+      socket.emit('deposit', {transferAmount: amountValue});
   }
 
-
+  console.log(information);
   return (
     <>
       {!login ? (
@@ -52,7 +46,7 @@ const Shop = props => {
             />
             <Button click={handleCardTransfer}>Przelej</Button>
           </div>
-            <History history={historyTransaction}/>
+            {information.transactions? <History history={information.transactions}/>: null}
         </div>
       )}{" "}
     </>

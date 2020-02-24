@@ -2,7 +2,6 @@ import React from 'react';
 import './accountBalance.css'
 
 const accountBalance = ({information}) => {
-    console.log(information)
         return (
             <div className="accountBalance-container">
                 <div className="account-name">
