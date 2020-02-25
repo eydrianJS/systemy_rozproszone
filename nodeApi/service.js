@@ -47,68 +47,57 @@ const sendToQue = (name, ...params) => {
   }
 };
 
-const saveToHistory = async (historyId, value, user, kindOfTransaction) => {
-  let query = { _id: new ObjectID(historyId) };
-  let total = await db.collection("history").updateOne(
-    query,
-    {
-      $push: {
-        transactions: {
-          date: new Date().toISOString(),
-          value: value,
-          saldoAfter: loginUsers[user].accountBalance,
-          user: loginUsers[user]._id,
-          kindOfTransaction: kindOfTransaction
-        }
-      }
-    },
-    function(err, res) {
-      if (err) throw err;
-      console.log(res.result.nModified + " document(s) updated");
-      updatedHistory(historyId, user);
-    }
-  );
-};
-
-const updatedHistory = async (accountId, user) => {
-  let history = await db
-    .collection("history")
-    .findOne({ _id: new ObjectID(accountId) });
-
+const updatedHistory = async (query, user) => {
+  let account = await db.collection("accounts").findOne(query);
+  
   atm.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[user].socketId
-  });
+  }); 
   card.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[user].socketId
   });
   tranfers.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[user].socketId
   });
+};
+
+const createUpdateRequest = (user, value, type) => {
+  return {
+    $set: { accountBalance: loginUsers[user].accountBalance },
+    $push: {
+      history: {
+        date: new Date().toISOString(),
+        value: value,
+        saldoAfter: loginUsers[user].accountBalance,
+        user: loginUsers[user]._id,
+        type: type
+      }
+    }
+  };
 };
 
 const deposite = async (user, value) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
   let account = await db.collection("accounts").findOne(query);
   loginUsers[user].accountBalance = account.accountBalance + parseFloat(value);
-  let newVal = { $set: { accountBalance: loginUsers[user].accountBalance } };
-  let total = await db
-    .collection("accounts")
-    .updateOne(query, newVal, function(err, res) {
-      if (err) {
-        throw err;
-      } else {
-        console.log(res.result.nModified + " document(s) updated");
-        saveToHistory(account.history, value, user, "deposite");
-      }
-    });
+  let newVal = createUpdateRequest(user, value, "deposite");
+  sendUpdate(query, newVal, user);
 
   requestQueue.shift();
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
   }
+};
+
+const sendUpdate = (query, newVal, user) => {
+  db.collection("accounts").updateOne(query, newVal, function(err, res) {
+    if (err) throw err;
+    console.log(res.result.nModified + " document(s) updated");
+    updatedHistory(query, user)
+  });
 };
 
 const withDrawal = async (user, value) => {
@@ -124,17 +113,9 @@ const withDrawal = async (user, value) => {
     return;
   }
   loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
-  let newVal = { $set: { accountBalance: loginUsers[user].accountBalance } };
-  let total = await db
-    .collection("accounts")
-    .updateOne(query, newVal, function(err, res) {
-      if (err) {
-        throw err;
-      } else {
-        console.log(res.result.nModified + " document(s) updated");
-        saveToHistory(account.history, value, user, "withDrawal");
-      }
-    });
+  let newVal = createUpdateRequest(user, value, "withDrawal");
+  sendUpdate(query, newVal, user);
+
   requestQueue.shift();
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
@@ -156,9 +137,6 @@ atm.on("serverLogin", async msg => {
   let account = await db
     .collection("accounts")
     .findOne({ _id: new ObjectID(user.accounts[0]) });
-  let history = await db
-    .collection("history")
-    .findOne({ _id: new ObjectID(account.history) });
   if (user) {
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
@@ -168,10 +146,10 @@ atm.on("serverLogin", async msg => {
       }
     });
     user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account, ...history };
+    loginUsers[msg.id] = { ...user, ...account };
   }
   atm.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[msg.id].socketId
   });
   atm.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
@@ -200,9 +178,6 @@ card.on("serverLogin", async msg => {
   let account = await db
     .collection("accounts")
     .findOne({ _id: new ObjectID(user.accounts[0]) });
-  let history = await db
-    .collection("history")
-    .findOne({ _id: new ObjectID(account.history) });
   if (user) {
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
@@ -212,10 +187,10 @@ card.on("serverLogin", async msg => {
       }
     });
     user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account, ...history };
+    loginUsers[msg.id] = { ...user, ...account };
   }
   card.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[msg.id].socketId
   });
   card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
@@ -234,9 +209,6 @@ tranfers.on("serverLogin", async msg => {
   let account = await db
     .collection("accounts")
     .findOne({ _id: new ObjectID(user.accounts[0]) });
-  let history = await db
-    .collection("history")
-    .findOne({ _id: new ObjectID(account.history) });
   if (user) {
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
@@ -246,10 +218,10 @@ tranfers.on("serverLogin", async msg => {
       }
     });
     user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account, ...history };
+    loginUsers[msg.id] = { ...user, ...account };
   }
   tranfers.emit("accountBallanceUpdate", {
-    ...history,
+    ...account,
     socketId: loginUsers[msg.id].socketId
   });
   tranfers.emit("serverLoginResponse", {

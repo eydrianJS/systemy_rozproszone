@@ -2,7 +2,6 @@ import React from "react";
 import "./historyTransaction.css";
 
 const historyTransaction = ({history}) => {
-
   return (
     <div>
       <table className="table-container">
@@ -15,11 +14,11 @@ const historyTransaction = ({history}) => {
           </tr>
         </thead>
         <tbody className="table-header">
-          {history.map(item => {
+          {history.history.map(item => {
             return (
               <tr className="table-row-body">
                 <td className="size-270 date-cell">{item.date}</td>
-                <td className="size-170 type-cell">{item.kindOfTransaction}</td>
+                <td className="size-170 type-cell">{item.type}</td>
                 <td className="size-120 amount-cell">{item.value}</td>
                 <td className="size-130">{item.saldoAfter}</td>
               </tr>

@@ -1,7 +1,7 @@
 import React from "react";
 import "./accountBalance.css";
 
-const accountBalance = ({ information }) => {
+const accountBalance = ({ information, accountBallance }) => {
   return (
     <div className="accountBalance-container">
       <div className="account-name">
@@ -15,7 +15,7 @@ const accountBalance = ({ information }) => {
       </div>
       <div className="account-currentBalance">
         <p>Dostępne środki</p>
-        <h2>{information.accountBallance} PLN</h2>
+        <h2>{accountBallance.accountBalance} PLN</h2>
       </div>
     </div>
   );
