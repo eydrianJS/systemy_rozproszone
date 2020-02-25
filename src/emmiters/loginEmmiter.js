@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import { postLogin } from "./../services/services";
-import api from "../config"
+import api from "../config";
 let socket;
 
-const useDefaultEmmiter = (port) => {
+const useDefaultEmmiter = port => {
   const [login, setLogin] = useState(false);
-  const [information, setInformation] = useState({})
+  const [information, setInformation] = useState({});
 
   const onChange = (e, value) => {
     e.preventDefault();
@@ -23,6 +23,7 @@ const useDefaultEmmiter = (port) => {
       socket.disconnect();
     };
   }, []);
+
   useEffect(() => {
     socket.on("loginResponse", value => {
       if (value !== null) {
@@ -30,9 +31,9 @@ const useDefaultEmmiter = (port) => {
         setInformation(value);
       }
     });
-    socket.on("accountBallance", (msg) => {
-      setInformation(msg)
-    })
+    socket.on("accountBallance", msg => {
+      setInformation(msg);
+    });
   }, []);
 
   return { login, onChange, Logout, information, socket };

@@ -1,33 +1,34 @@
 import React, { useState } from "react";
 import "./shop.css";
-import Button from '../../components/UI/button';
+import Button from "../../components/UI/button";
 import Login from "./../../components/login/login";
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
-import History from '../../components/historyTransaction/historyTransaction';
+import History from "../../components/historyTransaction/historyTransaction";
 
 let currentDate = new Date();
-let formattedDate = currentDate.getDate() + '-' + currentDate.getMonth() + '-' + currentDate.getFullYear();
+let formattedDate =
+  currentDate.getDate() +
+  "-" +
+  currentDate.getMonth() +
+  "-" +
+  currentDate.getFullYear();
 
 const Shop = props => {
-  const [amountValue, setAmount] = useState('');
-  
-  const { login, onChange, Logout, information, socket } = useLoginEmmiter("8083");
-  
-  const ID = () => {
-    return '_' + Math.random().toString(36).substr(2, 9);
-  }
+  const [amountValue, setAmount] = useState("");
+
+  const { login, onChange, Logout, information, socket } = useLoginEmmiter(
+    "8083"
+  );
 
   const handleChangeAmount = e => {
     setAmount(e.target.value);
-  }
+  };
 
   const handleCardTransfer = e => {
-      // setHistoryTransaction(historyTransaction.concat({id: ID(), date: formattedDate, cardNumber: information.cardNumber, type: 'Płatność kartą', ammount: amountValue, accountBalance: information.accountBalance}))
-      socket.emit('deposit', {transferAmount: amountValue});
-  }
+    socket.emit("deposit", { transferAmount: amountValue });
+  };
 
-  console.log(information);
   return (
     <>
       {!login ? (
@@ -46,7 +47,9 @@ const Shop = props => {
             />
             <Button click={handleCardTransfer}>Przelej</Button>
           </div>
-            {information.transactions? <History history={information.transactions}/>: null}
+          {information.transactions ? (
+            <History history={information.transactions} />
+          ) : null}
         </div>
       )}{" "}
     </>

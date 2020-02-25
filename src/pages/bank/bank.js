@@ -3,7 +3,7 @@ import "./bank.css";
 import Login from "./../../components/login/login";
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
-import History from "./../../components/historyTransaction/historyTransaction"
+import History from "./../../components/historyTransaction/historyTransaction";
 
 const Bank = ({ accountBalance }) => {
   const [amountValue, setAmountValue] = useState("");
@@ -50,7 +50,9 @@ const Bank = ({ accountBalance }) => {
               </button>
             </div>
           </div>
-          {information.transactions? <History history={information.transactions}/>: null}
+          {information.transactions ? (
+            <History history={information.transactions} />
+          ) : null}
         </div>
       )}
     </>

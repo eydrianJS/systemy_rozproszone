@@ -14,16 +14,16 @@ const historyTransaction = ({ history }) => {
           </tr>
         </thead>
         <tbody className="table-header">
-            {history.map(item => {
-                return (
-                    <tr className="table-row-body">
-                        <td className="size-270 date-cell">{item.date}</td>
-                        <td className="size-170 type-cell">{item.kindOfTransaction}</td>
-                        <td className="size-120 amount-cell">{item.value}</td>
-                        <td className="size-130">{item.saldoAfter}</td>
-                    </tr>
-                )
-            })}
+          {history.map(item => {
+            return (
+              <tr className="table-row-body">
+                <td className="size-270 date-cell">{item.date}</td>
+                <td className="size-170 type-cell">{item.kindOfTransaction}</td>
+                <td className="size-120 amount-cell">{item.value}</td>
+                <td className="size-130">{item.saldoAfter}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
