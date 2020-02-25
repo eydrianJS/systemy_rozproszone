@@ -29,14 +29,13 @@ const useDefaultEmmiter = port => {
       if (value !== null) {
         setLogin(true);
         setInformation(value);
-        console.log(value)
       }
     });
     socket.on("accountBallance", msg => {
-      // setInformation(msg);
-      
-      console.log(msg);
-      setAccountBallance(msg)
+      msg.history.sort(function(x, y) {
+        return y.date - x.date;
+      }).reverse();
+      setAccountBallance(msg);
     });
   }, []);
 

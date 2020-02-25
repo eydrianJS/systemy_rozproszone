@@ -31,7 +31,6 @@ io.on("connect", function(socket) {
   });
 
   socket.on("accountBallanceUpdate", function(msg) {
-    console.log("msg room res:" + msg.room);
     msg.socketId.forEach(element => {
       io.to(element).emit("accountBallance", msg);
     });
