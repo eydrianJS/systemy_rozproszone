@@ -47,21 +47,33 @@ const sendToQue = (name, ...params) => {
   }
 };
 
-const saveToHistory = async (historyId, value, saldoAfter, user, kindOfTransaction) => {
+const saveToHistory = async (
+  historyId,
+  value,
+  saldoAfter,
+  user,
+  kindOfTransaction
+) => {
   let query = { _id: new ObjectID(historyId) };
-  let total = await db
-    .collection("history")
-    .updateOne(query, { $push: { "transactions": {
-      date: new Date().toISOString(),
-      value: value,
-      saldoAfter: saldoAfter,
-      user: user,
-      kindOfTransaction: kindOfTransaction
-    }} }, function(err, res) {
+  let total = await db.collection("history").updateOne(
+    query,
+    {
+      $push: {
+        transactions: {
+          date: new Date().toISOString(),
+          value: value,
+          saldoAfter: saldoAfter,
+          user: user,
+          kindOfTransaction: kindOfTransaction
+        }
+      }
+    },
+    function(err, res) {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
-    });
-}
+    }
+  );
+};
 
 const deposite = async (user, value) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
@@ -74,7 +86,13 @@ const deposite = async (user, value) => {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
     });
-    saveToHistory(account.history, value, loginUsers[user].accountBalance, loginUsers[user]._id, "deposite");
+  saveToHistory(
+    account.history,
+    value,
+    loginUsers[user].accountBalance,
+    loginUsers[user]._id,
+    "deposite"
+  );
   requestQueue.shift();
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
@@ -104,7 +122,13 @@ const withDrawal = async (user, value) => {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
     });
-    saveToHistory(account.history, value, loginUsers[user].accountBalance, loginUsers[user]._id, "withDrawal");
+  saveToHistory(
+    account.history,
+    value,
+    loginUsers[user].accountBalance,
+    loginUsers[user]._id,
+    "withDrawal"
+  );
   requestQueue.shift();
   atm.emit("accountBallanceUpdate", loginUsers[user]);
   card.emit("accountBallanceUpdate", loginUsers[user]);
@@ -130,9 +154,21 @@ atm.on("serverLogin", async msg => {
     .collection("history")
     .findOne({ _id: new ObjectID(account.history) });
   if (user) {
+    user.socketId = [];
+    Object.entries(loginUsers).forEach(([key, val]) => {
+      if (account.accountNumber === val.accountNumber) {
+        loginUsers[key].socketId.push(msg.id);
+        user.socketId = loginUsers[key].socketId;
+      }
+    });
+    user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
   atm.emit("serverLoginResponse", loginUsers[msg.id]);
+});
+
+atm.on("disconnect", id => {
+  delete loginUsers[id];
 });
 
 atm.on("serverDeposite", msg => {
@@ -158,6 +194,14 @@ card.on("serverLogin", async msg => {
     .collection("history")
     .findOne({ _id: new ObjectID(account.history) });
   if (user) {
+    user.socketId = [];
+    Object.entries(loginUsers).forEach(([key, val]) => {
+      if (account.accountNumber === val.accountNumber) {
+        loginUsers[key].socketId.push(msg.id);
+        user.socketId = loginUsers[key].socketId;
+      }
+    });
+    user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
   card.emit("serverLoginResponse", loginUsers[msg.id]);
@@ -174,6 +218,14 @@ tranfers.on("serverLogin", async msg => {
     .collection("history")
     .findOne({ _id: new ObjectID(account.history) });
   if (user) {
+    user.socketId = [];
+    Object.entries(loginUsers).forEach(([key, val]) => {
+      if (account.accountNumber === val.accountNumber) {
+        loginUsers[key].socketId.push(msg.id);
+        user.socketId = loginUsers[key].socketId;
+      }
+    });
+    user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
   tranfers.emit("serverLoginResponse", loginUsers[msg.id]);

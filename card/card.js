@@ -18,12 +18,22 @@ io.on("connection", function(socket) {
   socket.on("login", function(msg) {
     io.emit("serverLogin", { ...msg, id: socket.id });
   });
+  
   socket.on("serverLoginResponse", function(msg) {
-    io.emit("loginResponse", msg);
+    msg.socketId.forEach(element => {
+      io.to(element).emit("loginResponse", msg); 
+    })
   });
+
   socket.on("accountBallanceUpdate", function(msg) {
-    io.emit("accountBallance", msg);
+    msg.socketId.forEach(element => {
+      io.to(element).emit("accountBallance", msg); 
+    })
   });
+
+  socket.on("disconnect", () => {
+    io.emit("disconnect", socket.id);
+  })
 });
 
 server.listen(8083, () => {
