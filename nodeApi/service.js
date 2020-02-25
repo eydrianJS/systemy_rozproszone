@@ -47,13 +47,7 @@ const sendToQue = (name, ...params) => {
   }
 };
 
-const saveToHistory = async (
-  historyId,
-  value,
-  saldoAfter,
-  user,
-  kindOfTransaction
-) => {
+const saveToHistory = async (historyId, value, user, kindOfTransaction) => {
   let query = { _id: new ObjectID(historyId) };
   let total = await db.collection("history").updateOne(
     query,
@@ -62,8 +56,8 @@ const saveToHistory = async (
         transactions: {
           date: new Date().toISOString(),
           value: value,
-          saldoAfter: saldoAfter,
-          user: user,
+          saldoAfter: loginUsers[user].accountBalance,
+          user: loginUsers[user]._id,
           kindOfTransaction: kindOfTransaction
         }
       }
@@ -71,6 +65,7 @@ const saveToHistory = async (
     function(err, res) {
       if (err) throw err;
       console.log(res.result.nModified + " document(s) updated");
+      updatedHistory(historyId, user);
     }
   );
 };
@@ -80,10 +75,19 @@ const updatedHistory = async (accountId, user) => {
     .collection("history")
     .findOne({ _id: new ObjectID(accountId) });
 
-  atm.emit("accountBallanceUpdate", {...history, socketId: loginUsers[user].socketId});
-  card.emit("accountBallanceUpdate", {...history, socketId: loginUsers[user].socketId});
-  tranfers.emit("accountBallanceUpdate",{...history, socketId: loginUsers[user].socketId});
-}
+  atm.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[user].socketId
+  });
+  card.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[user].socketId
+  });
+  tranfers.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[user].socketId
+  });
+};
 
 const deposite = async (user, value) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
@@ -93,18 +97,15 @@ const deposite = async (user, value) => {
   let total = await db
     .collection("accounts")
     .updateOne(query, newVal, function(err, res) {
-      if (err) throw err;
-      console.log(res.result.nModified + " document(s) updated");
+      if (err) {
+        throw err;
+      } else {
+        console.log(res.result.nModified + " document(s) updated");
+        saveToHistory(account.history, value, user, "deposite");
+      }
     });
-  saveToHistory(
-    account.history,
-    value,
-    loginUsers[user].accountBalance,
-    loginUsers[user]._id,
-    "deposite"
-  );
+
   requestQueue.shift();
-  updatedHistory(account.history, user);
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
   }
@@ -127,21 +128,17 @@ const withDrawal = async (user, value) => {
   let total = await db
     .collection("accounts")
     .updateOne(query, newVal, function(err, res) {
-      if (err) throw err;
-      console.log(res.result.nModified + " document(s) updated");
+      if (err) {
+        throw err;
+      } else {
+        console.log(res.result.nModified + " document(s) updated");
+        saveToHistory(account.history, value, user, "withDrawal");
+      }
     });
-  saveToHistory(
-    account.history,
-    value,
-    loginUsers[user].accountBalance,
-    loginUsers[user]._id,
-    "withDrawal"
-  );
-  updatedHistory(account.history, user)
+  requestQueue.shift();
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
   }
-  requestQueue.shift();
 };
 
 app.use(cors());
@@ -173,8 +170,11 @@ atm.on("serverLogin", async msg => {
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  atm.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
-  atm.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
+  atm.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[msg.id].socketId
+  });
+  atm.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
 });
 
 atm.on("disconnect", id => {
@@ -208,14 +208,17 @@ card.on("serverLogin", async msg => {
     Object.entries(loginUsers).forEach(([key, val]) => {
       if (account.accountNumber === val.accountNumber) {
         loginUsers[key].socketId.push(msg.id);
-        user.socketId = loginUsers[key].socketId; 
+        user.socketId = loginUsers[key].socketId;
       }
     });
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  card.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
-  card.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
+  card.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[msg.id].socketId
+  });
+  card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
 });
 
 card.on("serverWithdrawal", msg => {
@@ -245,10 +248,15 @@ tranfers.on("serverLogin", async msg => {
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  tranfers.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
-  tranfers.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
+  tranfers.emit("accountBallanceUpdate", {
+    ...history,
+    socketId: loginUsers[msg.id].socketId
+  });
+  tranfers.emit("serverLoginResponse", {
+    ...loginUsers[msg.id],
+    login: msg.id
+  });
 });
-
 
 tranfers.on("serverWithdrawal", msg => {
   try {
