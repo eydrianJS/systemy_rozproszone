@@ -5,7 +5,7 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://192.168.0.12";
+const api = "http://10.102.40.12";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
@@ -132,7 +132,6 @@ atm.on("serverLogin", async msg => {
   if (user) {
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  console.log(loginUsers);
   atm.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
@@ -161,7 +160,6 @@ card.on("serverLogin", async msg => {
   if (user) {
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  console.log(loginUsers);
   card.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
@@ -178,7 +176,6 @@ tranfers.on("serverLogin", async msg => {
   if (user) {
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  console.log(loginUsers);
   tranfers.emit("serverLoginResponse", loginUsers[msg.id]);
 });
 
