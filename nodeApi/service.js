@@ -198,13 +198,19 @@ card.on("serverLogin", async msg => {
     Object.entries(loginUsers).forEach(([key, val]) => {
       if (account.accountNumber === val.accountNumber) {
         loginUsers[key].socketId.push(msg.id);
-        user.socketId = loginUsers[key].socketId;
+        user.socketId = loginUsers[key].socketId; 
       }
     });
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
   card.emit("serverLoginResponse", loginUsers[msg.id]);
+});
+
+card.on("serverWithdrawal", msg => {
+  try {
+    sendToQue(withDrawal, msg.id, msg.transferAmount);
+  } catch (e) {}
 });
 
 tranfers.on("serverLogin", async msg => {
@@ -229,6 +235,13 @@ tranfers.on("serverLogin", async msg => {
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
   tranfers.emit("serverLoginResponse", loginUsers[msg.id]);
+});
+
+
+tranfers.on("serverWithdrawal", msg => {
+  try {
+    sendToQue(withDrawal, msg.id, msg.transferAmount);
+  } catch (e) {}
 });
 
 server.listen(8081, () => {

@@ -4,6 +4,7 @@ import Button from '../../components/UI/button';
 import Login from "./../../components/login/login";
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
+import History from "../../components/historyTransaction/historyTransaction";
 
 const Account = () => {
   const [accountValue, setAccountValue] = useState("");
@@ -13,6 +14,11 @@ const Account = () => {
 
   const handleChangeAccount = e => {
     setAccountValue(e.target.value);
+  };
+
+  const handleTransfer = e => {
+    console.log(accountValue);
+    socket.emit("withdrawal", { transferAmount: accountValue });
   };
 
   return (
@@ -30,7 +36,10 @@ const Account = () => {
             value={accountValue}
             onChange={handleChangeAccount}
           />
-          <Button>przelej</Button>
+          <Button click={handleTransfer}>przelej</Button>
+          {information.transactions ? (
+            <History history={information.transactions} />
+          ) : null}
         </div>
       )}{" "}
     </>

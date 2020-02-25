@@ -18,7 +18,7 @@ const Shop = () => {
   };
 
   const handleCardTransfer = e => {
-    socket.emit("deposit", { transferAmount: amountValue });
+    socket.emit("withdrawal", { transferAmount: amountValue });
   };
 
   return (
