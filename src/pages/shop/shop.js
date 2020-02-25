@@ -6,15 +6,7 @@ import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
 import History from "../../components/historyTransaction/historyTransaction";
 
-let currentDate = new Date();
-let formattedDate =
-  currentDate.getDate() +
-  "-" +
-  currentDate.getMonth() +
-  "-" +
-  currentDate.getFullYear();
-
-const Shop = props => {
+const Shop = () => {
   const [amountValue, setAmount] = useState("");
 
   const { login, onChange, Logout, information, socket } = useLoginEmmiter(
