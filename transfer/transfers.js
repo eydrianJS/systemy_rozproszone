@@ -29,8 +29,8 @@ io.on("connection", function(socket) {
     });
   });
 
-  socket.on("withdrawal", function(msg) {
-    io.emit("serverWithdrawal", { ...msg, id: socket.id });
+  socket.on("transfer", function(msg) {
+    io.emit("serverTransfer", { ...msg, id: socket.id });
   });
 
   socket.on("disconnect", () => {

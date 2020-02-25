@@ -83,7 +83,7 @@ const deposite = async (user, value) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
   let account = await db.collection("accounts").findOne(query);
   loginUsers[user].accountBalance = account.accountBalance + parseFloat(value);
-  let newVal = createUpdateRequest(user, value, "deposite");
+  let newVal = createUpdateRequest(user, value, "Deposite");
   sendUpdate(query, newVal, user);
 
   requestQueue.shift();
@@ -100,7 +100,7 @@ const sendUpdate = (query, newVal, user) => {
   });
 };
 
-const withDrawal = async (user, value) => {
+const withDrawal = async (user, value, type) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
   let account = await db.collection("accounts").findOne(query);
 
@@ -113,7 +113,7 @@ const withDrawal = async (user, value) => {
     return;
   }
   loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
-  let newVal = createUpdateRequest(user, value, "withDrawal");
+  let newVal = createUpdateRequest(user, value, type);
   sendUpdate(query, newVal, user);
 
   requestQueue.shift();
@@ -167,7 +167,7 @@ atm.on("serverDeposite", msg => {
 
 atm.on("serverWithdrawal", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount);
+    sendToQue(withDrawal, msg.id, msg.transferAmount, "Withdral" );
   } catch (e) {}
 });
 
@@ -196,9 +196,9 @@ card.on("serverLogin", async msg => {
   card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
 });
 
-card.on("serverWithdrawal", msg => {
+card.on("serverPay", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount);
+    sendToQue(withDrawal, msg.id, msg.transferAmount, "Card Pay");
   } catch (e) {}
 });
 
@@ -230,9 +230,9 @@ tranfers.on("serverLogin", async msg => {
   });
 });
 
-tranfers.on("serverWithdrawal", msg => {
+tranfers.on("serverTransfer", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount);
+    sendToQue(withDrawal, msg.id, msg.transferAmount, "Transfer");
   } catch (e) {}
 });
 
@@ -240,99 +240,8 @@ server.listen(8081, () => {
   console.log("Server is listening on port 8081");
 });
 
-// const express = require("express");
-// const bodyParser = require("body-parser");
-// var cors = require("cors");
-// var http = require("http");
-// var app = express();
-// var server = http.createServer(app);
 
-// var io = require("socket.io").listen(server);
-// const users = [
-//   {
-//     name: "Jan",
-//     surname: "Kowalski",
-//     username: "123456",
-//     password: "123456",
-//     accountBalance: 1000,
-//     accountNumber: "48 1082 5132 0000 1202 4134 3904",
-//     cardNumber: "12312312"
-//   }
-// ];
-// // create express app
-// app.use(cors());
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "http://localhost:8004");
-//   res.header("Access-Control-Allow-Credentials", true);
-//   res.header("Access-Control-Allow-Methods", "*");
-//   next();
-// });
 
-// const router = express.Router();
-
-// router.get("/", (req, res) => {
-//   res.send({ response: "I am alive" }).status(200);
-// });
-
-// // parse requests of content-type - application/x-www-form-urlencoded
-// app.use(bodyParser.urlencoded({ extended: true }));
-
-// // parse requests of content-type - application/json
-// app.use(bodyParser.json());
-
-// // define a simple route
-// app.get("/", (req, res) => {
-//   res.json({
-//     message:
-//       "Welcome to EasyNotes application. Take notes quickly. Organize and keep track of all your notes."
-//   });
-// });
-
-// app.post("/addUser", ({ body }, res) => {
-//   try {
-//     const user = {
-//       username: body.username,
-//       password: body.password
-//     };
-//     users.push(user);
-//     console.log(user);
-//     res.json({ message: "User ok" });
-//   } catch (e) {}
-// });
-
-// app.post("/login", ({ body }, res) => {
-//   try {
-//     const user = users.filter(({ username, password }) => {
-//       return username === body.username && password === body.password;
-//     });
-//     if (user.length > 0) {
-//       res.json({ message: "Login ok" });
-//     }
-//     res.sendStatus(404);
-//   } catch (e) {}
-// });
-
-// // płatność w sklepie
-// app.post("/pay", ({ body }, res) => {
-//   try {
-//     users.map(user => {
-//       if (body.username == user.username) {
-//         if (user.accountBalance < body.transferAmount) {
-//           res.json({ message: "Insufficient account balance" });
-//         } else {
-//           user.accountBalance -= body.transferAmount;
-//           res.json({
-//             message: "Trasfer ok",
-//             accountBalance: user.accountBalance
-//           });
-//         }
-//       }
-//       return user;
-//     });
-
-//     res.sendStatus(404);
-//   } catch (e) {}
-// });
 // // przelew
 // app.post("/transfer", ({ body }, res) => {
 //   try {

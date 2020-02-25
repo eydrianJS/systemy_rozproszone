@@ -17,7 +17,7 @@ const Account = () => {
   };
 
   const handleTransfer = e => {
-    socket.emit("withdrawal", { transferAmount: accountValue });
+    socket.emit("transfer", { transferAmount: accountValue });
   };
   
   return (
