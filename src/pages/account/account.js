@@ -8,7 +8,7 @@ import History from "../../components/historyTransaction/historyTransaction";
 
 const Account = () => {
   const [accountValue, setAccountValue] = useState("");
-  const { login, onChange, Logout, information, socket } = useLoginEmmiter(
+  const { login, onChange, Logout, information, socket, accountBallance } = useLoginEmmiter(
     "8084"
   );
 
@@ -17,17 +17,16 @@ const Account = () => {
   };
 
   const handleTransfer = e => {
-    console.log(accountValue);
     socket.emit("withdrawal", { transferAmount: accountValue });
   };
-
+  
   return (
     <>
       {!login ? (
         <Login onChange={onChange} login={login} logout={Logout} />
       ) : (
         <div className="account-contanier">
-          <AccountBalance information={information} />
+          <AccountBalance information={information} accountBallance={accountBallance}/>
           <h1>Dokonaj przelewu</h1>
           <input
             className="account-input"
@@ -37,8 +36,8 @@ const Account = () => {
             onChange={handleChangeAccount}
           />
           <Button click={handleTransfer}>przelej</Button>
-          {information.transactions ? (
-            <History history={information.transactions} />
+          {accountBallance ? (
+            <History history={accountBallance} />
           ) : null}
         </div>
       )}{" "}

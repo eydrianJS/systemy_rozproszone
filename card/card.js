@@ -20,9 +20,7 @@ io.on("connection", function(socket) {
   });
 
   socket.on("serverLoginResponse", function(msg) {
-    msg.socketId.forEach(element => {
-      io.to(element).emit("loginResponse", msg);
-    });
+    io.to(msg.login).emit("loginResponse", msg);
   });
 
   socket.on("accountBallanceUpdate", function(msg) {
@@ -34,7 +32,7 @@ io.on("connection", function(socket) {
   socket.on("withdrawal", function(msg) {
     io.emit("serverWithdrawal", { ...msg, id: socket.id });
   });
-  
+
   socket.on("disconnect", () => {
     io.emit("disconnect", socket.id);
   });

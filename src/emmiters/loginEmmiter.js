@@ -7,7 +7,7 @@ let socket;
 const useDefaultEmmiter = port => {
   const [login, setLogin] = useState(false);
   const [information, setInformation] = useState({});
-
+  const [accountBallance, setAccountBallance] = useState([]);
   const onChange = (e, value) => {
     e.preventDefault();
     postLogin(value, socket);
@@ -32,11 +32,13 @@ const useDefaultEmmiter = port => {
       }
     });
     socket.on("accountBallance", msg => {
-      setInformation(msg);
+      // setInformation(msg);
+      console.log(msg);
+      setAccountBallance(msg.transactions)
     });
   }, []);
 
-  return { login, onChange, Logout, information, socket };
+  return { login, onChange, Logout, information, socket, accountBallance };
 };
 
 export default useDefaultEmmiter;

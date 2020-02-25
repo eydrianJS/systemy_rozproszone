@@ -19,9 +19,7 @@ io.on("connect", function(socket) {
     io.emit("serverLogin", { ...msg, id: socket.id });
   });
   socket.on("serverLoginResponse", function(msg) {
-    msg.socketId.forEach(element => {
-      io.to(element).emit("loginResponse", msg);
-    });
+      io.to(msg.login).emit("loginResponse", msg);
   });
 
   socket.on("deposit", function(msg) {

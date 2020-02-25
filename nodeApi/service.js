@@ -75,6 +75,16 @@ const saveToHistory = async (
   );
 };
 
+const updatedHistory = async (accountId, user) => {
+  let history = await db
+    .collection("history")
+    .findOne({ _id: new ObjectID(accountId) });
+
+  atm.emit("accountBallanceUpdate", {...history, socketId: loginUsers[user].socketId});
+  card.emit("accountBallanceUpdate", {...history, socketId: loginUsers[user].socketId});
+  tranfers.emit("accountBallanceUpdate",{...history, socketId: loginUsers[user].socketId});
+}
+
 const deposite = async (user, value) => {
   let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
   let account = await db.collection("accounts").findOne(query);
@@ -94,12 +104,10 @@ const deposite = async (user, value) => {
     "deposite"
   );
   requestQueue.shift();
+  updatedHistory(account.history, user);
   if (requestQueue.length !== 0) {
     requestQueue[0].name(...requestQueue[0].params);
   }
-  atm.emit("accountBallanceUpdate", loginUsers[user]);
-  card.emit("accountBallanceUpdate", loginUsers[user]);
-  tranfers.emit("accountBallanceUpdate", loginUsers[user]);
 };
 
 const withDrawal = async (user, value) => {
@@ -129,10 +137,11 @@ const withDrawal = async (user, value) => {
     loginUsers[user]._id,
     "withDrawal"
   );
+  updatedHistory(account.history, user)
+  if (requestQueue.length !== 0) {
+    requestQueue[0].name(...requestQueue[0].params);
+  }
   requestQueue.shift();
-  atm.emit("accountBallanceUpdate", loginUsers[user]);
-  card.emit("accountBallanceUpdate", loginUsers[user]);
-  tranfers.emit("accountBallanceUpdate", loginUsers[user]);
 };
 
 app.use(cors());
@@ -164,7 +173,8 @@ atm.on("serverLogin", async msg => {
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  atm.emit("serverLoginResponse", loginUsers[msg.id]);
+  atm.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
+  atm.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
 });
 
 atm.on("disconnect", id => {
@@ -204,7 +214,8 @@ card.on("serverLogin", async msg => {
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  card.emit("serverLoginResponse", loginUsers[msg.id]);
+  card.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
+  card.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
 });
 
 card.on("serverWithdrawal", msg => {
@@ -234,7 +245,8 @@ tranfers.on("serverLogin", async msg => {
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account, ...history };
   }
-  tranfers.emit("serverLoginResponse", loginUsers[msg.id]);
+  tranfers.emit("accountBallanceUpdate", {...history, socketId: loginUsers[msg.id].socketId});
+  tranfers.emit("serverLoginResponse", {...loginUsers[msg.id], login: msg.id});
 });
 
 

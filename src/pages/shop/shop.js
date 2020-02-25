@@ -9,7 +9,7 @@ import History from "../../components/historyTransaction/historyTransaction";
 const Shop = () => {
   const [amountValue, setAmount] = useState("");
 
-  const { login, onChange, Logout, information, socket } = useLoginEmmiter(
+  const { login, onChange, Logout, information, socket, accountBallance } = useLoginEmmiter(
     "8083"
   );
 
@@ -27,7 +27,7 @@ const Shop = () => {
         <Login onChange={onChange} login={login} logout={Logout} />
       ) : (
         <div className="shop-container">
-          <AccountBalance information={information} />
+          <AccountBalance information={information} accountBallance={accountBallance} />
           <h1>Przelew kartą</h1>
           <div className="shop-box">
             <input
@@ -39,8 +39,8 @@ const Shop = () => {
             />
             <Button click={handleCardTransfer}>Przelej</Button>
           </div>
-          {information.transactions ? (
-            <History history={information.transactions} />
+          {accountBallance ? (
+            <History history={accountBallance} />
           ) : null}
         </div>
       )}{" "}

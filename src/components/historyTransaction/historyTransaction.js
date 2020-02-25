@@ -1,7 +1,8 @@
 import React from "react";
 import "./historyTransaction.css";
 
-const historyTransaction = ({ history }) => {
+const historyTransaction = ({history}) => {
+
   return (
     <div>
       <table className="table-container">

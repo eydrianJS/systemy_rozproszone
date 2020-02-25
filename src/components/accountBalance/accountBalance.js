@@ -15,7 +15,7 @@ const accountBalance = ({ information }) => {
       </div>
       <div className="account-currentBalance">
         <p>Dostępne środki</p>
-        <h2>{information.accountBalance} PLN</h2>
+        <h2>{information.accountBallance} PLN</h2>
       </div>
     </div>
   );
