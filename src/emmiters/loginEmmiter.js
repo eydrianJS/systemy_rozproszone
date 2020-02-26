@@ -22,7 +22,7 @@ const useDefaultEmmiter = port => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [port]);
 
   useEffect(() => {
     socket.on("loginResponse", value => {

@@ -23,6 +23,7 @@ const Account = () => {
   };
 
   const handleTransfer = e => {
+    setAccountValue("");
     socket.emit("transfer", { transferAmount: accountValue });
   };
 

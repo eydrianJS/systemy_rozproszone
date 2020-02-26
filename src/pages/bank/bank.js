@@ -17,9 +17,11 @@ const Bank = ({ accountBalance }) => {
   };
 
   const handlePayment = e => {
+    setAmountValue("");
     socket.emit("deposit", { transferAmount: amountValue });
   };
   const handleWithdrawal = e => {
+    setAmountValue("");
     socket.emit("withdrawal", { transferAmount: amountValue });
   };
 
