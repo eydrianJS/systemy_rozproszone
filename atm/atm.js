@@ -36,6 +36,10 @@ io.on("connect", function(socket) {
     });
   });
 
+  socket.on("errorLogin", (msg) => {
+    io.to(msg.login).emit("errorLogin", msg.msg);
+  });
+
   socket.on("disconnect", () => {
     io.emit("disconnect", socket.id);
   });

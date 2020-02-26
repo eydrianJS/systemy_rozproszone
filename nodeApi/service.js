@@ -49,11 +49,11 @@ const sendToQue = (name, ...params) => {
 
 const updatedHistory = async (query, user) => {
   let account = await db.collection("accounts").findOne(query);
-  
+
   atm.emit("accountBallanceUpdate", {
     ...account,
     socketId: loginUsers[user].socketId
-  }); 
+  });
   card.emit("accountBallanceUpdate", {
     ...account,
     socketId: loginUsers[user].socketId
@@ -96,7 +96,7 @@ const sendUpdate = (query, newVal, user) => {
   db.collection("accounts").updateOne(query, newVal, function(err, res) {
     if (err) throw err;
     console.log(res.result.nModified + " document(s) updated");
-    updatedHistory(query, user)
+    updatedHistory(query, user);
   });
 };
 
@@ -134,10 +134,10 @@ atm.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
     .findOne({ username: msg.username, password: msg.password });
-  let account = await db
-    .collection("accounts")
-    .findOne({ _id: new ObjectID(user.accounts[0]) });
   if (user) {
+    let account = await db
+      .collection("accounts")
+      .findOne({ _id: new ObjectID(user.accounts[0]) });
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
       if (account.accountNumber === val.accountNumber) {
@@ -147,12 +147,17 @@ atm.on("serverLogin", async msg => {
     });
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account };
+    atm.emit("accountBallanceUpdate", {
+      ...account,
+      socketId: loginUsers[msg.id].socketId
+    });
+    atm.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
+  } else {
+    atm.emit("errorLogin", {
+      msg: "Login or password is incorrect",
+      login: msg.id
+    });
   }
-  atm.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[msg.id].socketId
-  });
-  atm.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
 });
 
 atm.on("disconnect", id => {
@@ -167,7 +172,7 @@ atm.on("serverDeposite", msg => {
 
 atm.on("serverWithdrawal", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount, "Withdral" );
+    sendToQue(withDrawal, msg.id, msg.transferAmount, "Withdral");
   } catch (e) {}
 });
 
@@ -175,10 +180,10 @@ card.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
     .findOne({ username: msg.username, password: msg.password });
-  let account = await db
-    .collection("accounts")
-    .findOne({ _id: new ObjectID(user.accounts[0]) });
   if (user) {
+    let account = await db
+      .collection("accounts")
+      .findOne({ _id: new ObjectID(user.accounts[0]) });
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
       if (account.accountNumber === val.accountNumber) {
@@ -188,12 +193,17 @@ card.on("serverLogin", async msg => {
     });
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account };
+    card.emit("accountBallanceUpdate", {
+      ...account,
+      socketId: loginUsers[msg.id].socketId
+    });
+    card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
+  } else {
+    card.emit("errorLogin", {
+      msg: "Login or password is incorrect",
+      login: msg.id
+    });
   }
-  card.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[msg.id].socketId
-  });
-  card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
 });
 
 card.on("serverPay", msg => {
@@ -206,10 +216,10 @@ tranfers.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
     .findOne({ username: msg.username, password: msg.password });
-  let account = await db
-    .collection("accounts")
-    .findOne({ _id: new ObjectID(user.accounts[0]) });
   if (user) {
+    let account = await db
+      .collection("accounts")
+      .findOne({ _id: new ObjectID(user.accounts[0]) });
     user.socketId = [];
     Object.entries(loginUsers).forEach(([key, val]) => {
       if (account.accountNumber === val.accountNumber) {
@@ -219,15 +229,20 @@ tranfers.on("serverLogin", async msg => {
     });
     user.socketId.push(msg.id);
     loginUsers[msg.id] = { ...user, ...account };
+    tranfers.emit("accountBallanceUpdate", {
+      ...account,
+      socketId: loginUsers[msg.id].socketId
+    });
+    tranfers.emit("serverLoginResponse", {
+      ...loginUsers[msg.id],
+      login: msg.id
+    });
+  } else {
+    tranfers.emit("errorLogin", {
+      msg: "Login or password is incorrect",
+      login: msg.id
+    });
   }
-  tranfers.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[msg.id].socketId
-  });
-  tranfers.emit("serverLoginResponse", {
-    ...loginUsers[msg.id],
-    login: msg.id
-  });
 });
 
 tranfers.on("serverTransfer", msg => {
@@ -239,8 +254,6 @@ tranfers.on("serverTransfer", msg => {
 server.listen(8081, () => {
   console.log("Server is listening on port 8081");
 });
-
-
 
 // // przelew
 // app.post("/transfer", ({ body }, res) => {

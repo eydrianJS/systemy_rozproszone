@@ -31,7 +31,11 @@ const useDefaultEmmiter = port => {
         setInformation(value);
       }
     });
-    socket.on("accountBallance", msg => {
+
+    socket.on("errorLogin", msg => {
+      alert(msg)
+    });
+    socket.on("accountBallance", msg => { 
       msg.history.sort(function(x, y) {
         return y.date - x.date;
       }).reverse();

@@ -33,6 +33,10 @@ io.on("connection", function(socket) {
     io.emit("serverTransfer", { ...msg, id: socket.id });
   });
 
+  socket.on("errorLogin", (msg) => {
+    io.to(msg.login).emit("errorLogin", msg.msg);
+  });
+
   socket.on("disconnect", () => {
     io.emit("disconnect", socket.id);
   });
