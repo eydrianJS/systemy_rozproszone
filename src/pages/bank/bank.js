@@ -26,7 +26,7 @@ const Bank = ({ accountBalance }) => {
   return (
     <>
       {!login ? (
-        <Login onChange={onChange} login={login} logout={Logout} />
+        <Login onChange={onChange} login={login}  />
       ) : (
         <div>
           <Logout logout={logout}/>
