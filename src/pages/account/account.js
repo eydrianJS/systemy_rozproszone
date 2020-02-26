@@ -1,16 +1,22 @@
 import React, { useState } from "react";
 import "./account.css";
-import Button from '../../components/UI/button';
+import Button from "../../components/UI/button";
 import Login from "./../../components/login/login";
+import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
 import History from "../../components/historyTransaction/historyTransaction";
 
 const Account = () => {
   const [accountValue, setAccountValue] = useState("");
-  const { login, onChange, Logout, information, socket, accountBallance } = useLoginEmmiter(
-    "8084"
-  );
+  const {
+    login,
+    onChange,
+    logout,
+    information,
+    socket,
+    accountBallance
+  } = useLoginEmmiter("8084");
 
   const handleChangeAccount = e => {
     setAccountValue(e.target.value);
@@ -19,14 +25,18 @@ const Account = () => {
   const handleTransfer = e => {
     socket.emit("transfer", { transferAmount: accountValue });
   };
-  
+
   return (
     <>
       {!login ? (
-        <Login onChange={onChange} login={login} logout={Logout} />
+        <Login onChange={onChange} login={login} logout={logout} />
       ) : (
         <div className="account-contanier">
-          <AccountBalance information={information} accountBallance={accountBallance}/>
+          <Logout logout={logout}/>
+          <AccountBalance
+            information={information}
+            accountBallance={accountBallance}
+          />
           <h1>Dokonaj przelewu</h1>
           <input
             className="account-input"
@@ -36,9 +46,7 @@ const Account = () => {
             onChange={handleChangeAccount}
           />
           <Button click={handleTransfer}>przelej</Button>
-          {accountBallance ? (
-            <History history={accountBallance} />
-          ) : null}
+          {accountBallance ? <History history={accountBallance} /> : null}
         </div>
       )}{" "}
     </>

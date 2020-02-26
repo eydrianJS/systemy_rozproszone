@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./shop.css";
 import Button from "../../components/UI/button";
 import Login from "./../../components/login/login";
+import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
 import History from "../../components/historyTransaction/historyTransaction";
@@ -9,7 +10,7 @@ import History from "../../components/historyTransaction/historyTransaction";
 const Shop = () => {
   const [amountValue, setAmount] = useState("");
 
-  const { login, onChange, Logout, information, socket, accountBallance } = useLoginEmmiter(
+  const { login, onChange, logout, information, socket, accountBallance } = useLoginEmmiter(
     "8083"
   );
 
@@ -27,6 +28,7 @@ const Shop = () => {
         <Login onChange={onChange} login={login} logout={Logout} />
       ) : (
         <div className="shop-container">
+          <Logout logout={logout}/>
           <AccountBalance information={information} accountBallance={accountBallance} />
           <h1>Przelew kartą</h1>
           <div className="shop-box">

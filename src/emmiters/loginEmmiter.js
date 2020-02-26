@@ -13,7 +13,7 @@ const useDefaultEmmiter = port => {
     postLogin(value, socket);
   };
 
-  const Logout = () => {
+  const logout = () => {
     setLogin(false);
   };
 
@@ -39,7 +39,7 @@ const useDefaultEmmiter = port => {
     });
   }, []);
 
-  return { login, onChange, Logout, information, socket, accountBallance };
+  return { login, onChange, logout, information, socket, accountBallance };
 };
 
 export default useDefaultEmmiter;

@@ -4,7 +4,6 @@ import { ReactComponent as BankLogo } from '../../assets/images/gold-ingots.svg'
 import { NavLink } from 'react-router-dom';
 
 const Nav = ({logout, login}) => {
-    console.log(login)
 
     return (
         <nav className="navigation">
