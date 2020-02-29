@@ -9,6 +9,7 @@ import History from "../../components/historyTransaction/historyTransaction";
 
 const Shop = () => {
   const [amountValue, setAmount] = useState("");
+  const [cardValue, setCardValue] = useState("");
 
   const { login, onChange, logout, information, socket, accountBallance } = useLoginEmmiter(
     "8083"
@@ -18,9 +19,14 @@ const Shop = () => {
     setAmount(e.target.value);
   };
 
+  const handleCardValue = e => {
+    setCardValue(e.target.value);
+  };
+
   const handleCardTransfer = e => {
     setAmount("");
-    socket.emit("pay", { transferAmount: amountValue });
+    setCardValue("")
+    socket.emit("pay", { transferAmount: amountValue, card: cardValue });
   };
 
   return (
@@ -39,7 +45,14 @@ const Shop = () => {
               placeholder="Wpisz kwotę"
               value={amountValue}
               onChange={handleChangeAmount}
-            />
+            />            
+          <input
+            className="account-input"
+            type="text"
+            placeholder="Wpisz numer karty"
+            value={cardValue}
+            onChange={handleCardValue}
+          />
             <Button click={handleCardTransfer}>Przelej</Button>
           </div>
           {accountBallance ? (

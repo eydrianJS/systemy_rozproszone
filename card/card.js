@@ -33,6 +33,10 @@ io.on("connection", function(socket) {
     io.emit("serverPay", { ...msg, id: socket.id });
   });
 
+  socket.on("transactionCancel", (msg) => {
+    io.to(msg.login).emit("transactionCancel", msg);
+  })
+
   socket.on("errorLogin", (msg) => {
     io.to(msg.login).emit("errorLogin", msg.msg);
   });

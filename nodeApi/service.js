@@ -5,7 +5,7 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://10.102.40.12";
+const api = "http://172.17.0.150";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
@@ -122,6 +122,29 @@ const withDrawal = async (user, value, type) => {
   }
 };
 
+const cardPay = async (user, value, cardNumber, type) => {
+  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
+  let account = await db.collection("accounts").findOne(query);
+
+
+  if (account.accountBalance < value || account.cardNumber !== cardNumber) {
+    card.emit("transactionCancel", { login: user, msg: "We cannot make the payment"})
+    requestQueue.shift();
+    if (requestQueue.length !== 0) {
+      requestQueue[0].name(...requestQueue[0].params);
+    }
+    return;
+  }
+  loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
+  let newVal = createUpdateRequest(user, value, type);
+  sendUpdate(query, newVal, user);
+
+  requestQueue.shift();
+  if (requestQueue.length !== 0) {
+    requestQueue[0].name(...requestQueue[0].params);
+  }
+};
+
 app.use(cors());
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:8002");
@@ -208,7 +231,7 @@ card.on("serverLogin", async msg => {
 
 card.on("serverPay", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount, "Card Pay");
+    sendToQue(cardPay, msg.id, msg.transferAmount, msg.card, "Card Pay");
   } catch (e) {}
 });
 

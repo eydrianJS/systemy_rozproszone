@@ -35,6 +35,11 @@ const useDefaultEmmiter = port => {
     socket.on("errorLogin", msg => {
       alert(msg)
     });
+    
+    socket.on("transactionCancel", msg => {
+      alert(msg.msg)
+    });
+    
     socket.on("accountBallance", msg => { 
       msg.history.sort(function(x, y) {
         return y.date - x.date;
