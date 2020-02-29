@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./login.css";
+import Button from '../UI/button';
 
 const Login = ({ onChange, logout, login }) => {
   const [value, setValue] = useState({
@@ -46,9 +47,9 @@ const Login = ({ onChange, logout, login }) => {
         value={value.password}
         onChange={handleChangePassword}
       />
-      <button className="login-button" type="submit">
+      <Button type="submit">
         Dalej
-      </button>
+      </Button>
     </form>
   );
 };

@@ -5,7 +5,7 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://172.17.0.150";
+const api = "http://192.168.62.97";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
@@ -157,6 +157,8 @@ atm.on("serverLogin", async msg => {
   let user = await db
     .collection("users")
     .findOne({ username: msg.username, password: msg.password });
+    console.log("msg" + msg);
+    console.log("user" +  user);
   if (user) {
     let account = await db
       .collection("accounts")

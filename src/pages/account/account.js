@@ -6,6 +6,7 @@ import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
 import History from "../../components/historyTransaction/historyTransaction";
+import Register from '../../components/register/register';
 
 const Account = () => {
   const [accountValue, setAccountValue] = useState("");
@@ -30,7 +31,10 @@ const Account = () => {
   return (
     <>
       {!login ? (
+        <div>
         <Login onChange={onChange} login={login} logout={logout} />
+        <Register login={login}/>
+        </div>
       ) : (
         <div className="account-contanier">
           <Logout logout={logout}/>

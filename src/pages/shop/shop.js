@@ -6,6 +6,7 @@ import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
 import History from "../../components/historyTransaction/historyTransaction";
+import Register from '../../components/register/register';
 
 const Shop = () => {
   const [amountValue, setAmount] = useState("");
@@ -20,6 +21,7 @@ const Shop = () => {
   };
 
   const handleCardValue = e => {
+    e.target.value = e.target.value.replace(/[^\dA-Z]/g, '').replace(/(.{4})/g, '$1 ').trim();
     setCardValue(e.target.value);
   };
 
@@ -32,7 +34,10 @@ const Shop = () => {
   return (
     <>
       {!login ? (
+        <div>
         <Login onChange={onChange} login={login} logout={Logout} />
+        <Register login={login}/>  
+        </div>
       ) : (
         <div className="shop-container">
           <Logout logout={logout}/>
