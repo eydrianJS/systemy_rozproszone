@@ -4,7 +4,7 @@ import "./historyTransaction.css";
 const historyTransaction = ({history}) => {
   return (
     <div>
-      <table className="table-container">
+      {/* <table className="table-container">
         <thead className="table-header">
           <tr className="table-row-header">
             <th className="size-270">Data: </th>
@@ -25,7 +25,7 @@ const historyTransaction = ({history}) => {
             );
           })}
         </tbody>
-      </table>
+      </table> */}
     </div>
   );
 };

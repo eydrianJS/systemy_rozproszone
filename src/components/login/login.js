@@ -40,13 +40,13 @@ const Login = ({ onChange, logout, login }) => {
         value={value.username}
         onChange={handleChangeUsername}
       />
-      <input
+      {/* <input
         className="login-input"
         type="password"
         placeholder="Password"
         value={value.password}
         onChange={handleChangePassword}
-      />
+      /> */}
       <Button type="submit">
         Dalej
       </Button>

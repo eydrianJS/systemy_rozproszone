@@ -19,7 +19,24 @@ const Bank = ({ accountBalance }) => {
 
   const handlePayment = e => {
     setAmountValue("");
-    socket.emit("deposit", { transferAmount: amountValue });
+    socket.emit("deposit", { transferAmount: 22 });
+    socket.emit("deposit", { transferAmount: 2 });
+    socket.emit("deposit", { transferAmount: 3 });
+    socket.emit("deposit", { transferAmount: 4 });
+    socket.emit("deposit", { transferAmount: 5 });
+    socket.emit("deposit", { transferAmount: 6 });
+    socket.emit("deposit", { transferAmount: 7 });
+    socket.emit("deposit", { transferAmount: 8 });
+    socket.emit("deposit", { transferAmount: 9 });
+    socket.emit("deposit", { transferAmount: 11 });
+    socket.emit("deposit", { transferAmount: 12 });
+    socket.emit("deposit", { transferAmount: 13 });
+    socket.emit("deposit", { transferAmount: 14 });
+    socket.emit("deposit", { transferAmount: 15 });
+    socket.emit("deposit", { transferAmount: 16 });
+    socket.emit("deposit", { transferAmount: 17 });
+    socket.emit("deposit", { transferAmount: 18 });
+    socket.emit("deposit", { transferAmount: 19 });
   };
   const handleWithdrawal = e => {
     setAmountValue("");
@@ -31,7 +48,7 @@ const Bank = ({ accountBalance }) => {
       {!login ? (
         <div>
           <Login onChange={onChange} login={login}  />
-          <Register login={login} />
+          {/* <Register login={login} /> */}
         </div>
       ) : (
         <div>

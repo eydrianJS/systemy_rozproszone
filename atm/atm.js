@@ -31,9 +31,7 @@ io.on("connect", function(socket) {
   });
 
   socket.on("accountBallanceUpdate", function(msg) {
-    msg.socketId.forEach(element => {
-      io.to(element).emit("accountBallance", msg);
-    });
+      io.to(msg.login).emit("accountBallance", msg);
   });
 
   socket.on("errorLogin", (msg) => {

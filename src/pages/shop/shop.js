@@ -36,7 +36,7 @@ const Shop = () => {
       {!login ? (
         <div>
         <Login onChange={onChange} login={login} logout={Logout} />
-        <Register login={login}/>  
+        {/* <Register login={login}/>   */}
         </div>
       ) : (
         <div className="shop-container">

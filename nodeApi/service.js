@@ -5,17 +5,17 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://192.168.62.97";
+const api = "http://192.168.0.12";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
 var card = ioSerwer.connect(`${api}:8083`, { reconnect: true });
 var atm = ioSerwer.connect(`${api}:8085`, { reconnect: true });
 
-let db, m;
+let aj, km, np, qz, m;
 const url = "mongodb://localhost:27017";
 
-const main = () => {
+const mainaj = () => {
   mongo.connect(
     url,
     {
@@ -27,122 +27,135 @@ const main = () => {
         console.error(err);
         return;
       }
-      db = client.db("Bank"); //MongoClient.connect();
-      m = name => db.collection(name);
+      aj = client.db("aj"); //MongoClient.connect();
     }
   );
 };
-main();
+mainaj();
+const mainkm = () => {
+  mongo.connect(
+    url,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, client) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      km = client.db("km"); //MongoClient.connect();
+    }
+  );
+};
+mainkm();
+const mainnp = () => {
+  mongo.connect(
+    url,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, client) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      np = client.db("np"); //MongoClient.connect();
+    }
+  );
+};
+mainnp();
+const mainqz = () => {
+  mongo.connect(
+    url,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, client) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      qz = client.db("qz"); //MongoClient.connect();
+    }
+  );
+};
+mainqz();
+let buffor = new Map();
 
 const loginUsers = [];
 const requestQueue = [];
 
-const sendToQue = (name, ...params) => {
+setInterval(() => {
+  buffor.forEach((user, userID) => {
+    if (!user.alreadyUpdated) {
+      updateUser(userID);
+      user.alreadyUpdated = true;
+    }
+  });
+}, 2000);
+
+setInterval(() => {
+  const actualRequests = [];
+  let valid = true;
+  buffor.forEach((value, key) => {
+    valid = value.alreadyUpdated? valid: false;
+  })
+  if (!valid) return;
+
+  const maxRequest = 10;
+
+  for (let i = 0; i < maxRequest; i++) {
+    if (requestQueue.length > 0) {
+      actualRequests.push(requestQueue[0]);
+      requestQueue.shift();
+    }
+    break;
+  }
+
+  let toRemove = [];
+  buffor.forEach((value, key) => {
+    let notRemove = false;
+    value.alreadyUpdated = false;
+    actualRequests.forEach(request => {
+      if (request.user === key) {
+        notRemove = true;
+        request.userInsideBuffor = true;
+      }
+    });
+    if (!notRemove) toRemove.push(key);
+  });
+
+  toRemove.forEach(item => {
+    buffor.delete(item);
+  });
+
+  actualRequests.forEach(request => {
+    if (!request.userInsideBuffor) {
+      buffor.push(getUser(request.user));
+    }
+    console.log(request);
+    request.name(request.user, ...request.params);
+  });
+}, 2000);
+
+const sendToQue = async (user, name, ...params) => {
   requestQueue.push({
+    user,
     name,
     params
   });
-  if (requestQueue.length === 1) {
-    name(...params);
+  if (!buffor.get(user) && buffor.size < 10) {
+    let databaseUser = await getUser(user);
+    buffor.set(user, { ...databaseUser, alreadyUpdated: true });
   }
 };
 
-const updatedHistory = async (query, user) => {
-  let account = await db.collection("accounts").findOne(query);
-
-  atm.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[user].socketId
-  });
-  card.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[user].socketId
-  });
-  tranfers.emit("accountBallanceUpdate", {
-    ...account,
-    socketId: loginUsers[user].socketId
-  });
-};
-
-const createUpdateRequest = (user, value, type) => {
-  return {
-    $set: { accountBalance: loginUsers[user].accountBalance },
-    $push: {
-      history: {
-        date: new Date().toISOString(),
-        value: value,
-        saldoAfter: loginUsers[user].accountBalance,
-        user: loginUsers[user]._id,
-        type: type
-      }
-    }
-  };
-};
 
 const deposite = async (user, value) => {
-  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
-  let account = await db.collection("accounts").findOne(query);
-  loginUsers[user].accountBalance = account.accountBalance + parseFloat(value);
-  let newVal = createUpdateRequest(user, value, "Deposite");
-  sendUpdate(query, newVal, user);
-
-  requestQueue.shift();
-  if (requestQueue.length !== 0) {
-    requestQueue[0].name(...requestQueue[0].params);
-  }
-};
-
-const sendUpdate = (query, newVal, user) => {
-  db.collection("accounts").updateOne(query, newVal, function(err, res) {
-    if (err) throw err;
-    console.log(res.result.nModified + " document(s) updated");
-    updatedHistory(query, user);
-  });
-};
-
-const withDrawal = async (user, value, type) => {
-  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
-  let account = await db.collection("accounts").findOne(query);
-
-  if (account.accountBalance < value) {
-    console.log("dupa");
-    requestQueue.shift();
-    if (requestQueue.length !== 0) {
-      requestQueue[0].name(...requestQueue[0].params);
-    }
-    return;
-  }
-  loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
-  let newVal = createUpdateRequest(user, value, type);
-  sendUpdate(query, newVal, user);
-
-  requestQueue.shift();
-  if (requestQueue.length !== 0) {
-    requestQueue[0].name(...requestQueue[0].params);
-  }
-};
-
-const cardPay = async (user, value, cardNumber, type) => {
-  let query = { _id: new ObjectID(loginUsers[user].accounts[0]) };
-  let account = await db.collection("accounts").findOne(query);
-
-
-  if (account.accountBalance < value || account.cardNumber !== cardNumber) {
-    card.emit("transactionCancel", { login: user, msg: "We cannot make the payment"})
-    requestQueue.shift();
-    if (requestQueue.length !== 0) {
-      requestQueue[0].name(...requestQueue[0].params);
-    }
-    return;
-  }
-  loginUsers[user].accountBalance = account.accountBalance - parseFloat(value);
-  let newVal = createUpdateRequest(user, value, type);
-  sendUpdate(query, newVal, user);
-
-  requestQueue.shift();
-  if (requestQueue.length !== 0) {
-    requestQueue[0].name(...requestQueue[0].params);
-  }
+  buffor.get(user).accountBalance += value;
 };
 
 app.use(cors());
@@ -153,30 +166,44 @@ app.use((req, res, next) => {
   next();
 });
 
+const getDatabase = id => {
+  if (parseInt(id) < 100) {
+    return aj;
+  } else if (parseInt(id) < 200) {
+    return km;
+  } else if (parseInt(id) < 300) {
+    return np;
+  }
+  return qz;
+};
+
+const getUser = async id => {
+  let db = getDatabase(id);
+  let user = await db.collection("users").findOne({ userID: id });
+  return user;
+};
+
+const updateUser = id => {
+  let db = getDatabase(id);
+  let query = { userID: id };
+  let newVal = {$set: { accountBalance: buffor.get(id).accountBalance }};
+  db.collection("users").updateOne(query, newVal, function(err, res) {
+    if (err) throw err;
+    console.log(res.result.nModified + " document(s) updated");
+  });
+};
+
 atm.on("serverLogin", async msg => {
-  let user = await db
-    .collection("users")
-    .findOne({ username: msg.username, password: msg.password });
-    console.log("msg" + msg);
-    console.log("user" +  user);
+  let id = msg.username;
+  let user = await getUser(id);
+
   if (user) {
-    let account = await db
-      .collection("accounts")
-      .findOne({ _id: new ObjectID(user.accounts[0]) });
-    user.socketId = [];
-    Object.entries(loginUsers).forEach(([key, val]) => {
-      if (account.accountNumber === val.accountNumber) {
-        loginUsers[key].socketId.push(msg.id);
-        user.socketId = loginUsers[key].socketId;
-      }
-    });
-    user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account };
+    loginUsers[msg.id] = user.userID;
     atm.emit("accountBallanceUpdate", {
-      ...account,
-      socketId: loginUsers[msg.id].socketId
+      ...user,
+      socketId: msg.id
     });
-    atm.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
+    atm.emit("serverLoginResponse", { ...user, login: msg.id });
   } else {
     atm.emit("errorLogin", {
       msg: "Login or password is incorrect",
@@ -191,7 +218,8 @@ atm.on("disconnect", id => {
 
 atm.on("serverDeposite", msg => {
   try {
-    sendToQue(deposite, msg.id, msg.transferAmount);
+    // console.log(loginUsers[msg.id]);
+    sendToQue(loginUsers[msg.id], deposite, msg.transferAmount);
   } catch (e) {}
 });
 

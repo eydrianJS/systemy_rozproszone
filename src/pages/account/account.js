@@ -33,7 +33,7 @@ const Account = () => {
       {!login ? (
         <div>
         <Login onChange={onChange} login={login} logout={logout} />
-        <Register login={login}/>
+        {/* <Register login={login}/> */}
         </div>
       ) : (
         <div className="account-contanier">
