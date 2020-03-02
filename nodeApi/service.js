@@ -313,22 +313,16 @@ atm.on("disconnect", id => {
 });
 
 atm.on("logoutServer", id => {
-  console.log(buffor);
-  console.log(loginUsers);
   buffor.delete(loginUsers[id]);
   delete loginUsers[id];
 });
 
 card.on("logoutServer", id => {
-  console.log(buffor);
-  console.log(loginUsers);
   buffor.delete(loginUsers[id]);
   delete loginUsers[id];
 });
 
 tranfers.on("logoutServer", id => {
-  console.log(buffor);
-  console.log(loginUsers);
   buffor.delete(loginUsers[id]);
   delete loginUsers[id];
 });
