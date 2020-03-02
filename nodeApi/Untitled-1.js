@@ -1,24 +1,38 @@
 
-// const createCardNumber = () => {
-//   let rand = Math.floor(Math.random() * 10000000000000000).toString();
-//   while (rand.length < 16) {
-//     rand = "0" + rand;
-//   }
-//   return rand
-//     .split("")
-//     .map((item, idx) => (idx % 4 !== 0 ? item : " " + item))
-//     .join("");
-// };
-// const createAccount = user => {
-//   const accountNumber = createAccountNumber();
-//   const cardNumber = createCardNumber();
-//   var myobj = {
-//     name: user.name,
-//     surname: user.surname,
-//     username: user.login,
-//     password: user.password,
-//     accounts: []
-//   };
+const createCardNumber = () => {
+  let rand = Math.floor(Math.random() * 10000000000000000).toString();
+  while (rand.length < 16) {
+    rand = "0" + rand;
+  }
+  return rand
+    .split("")
+    .map((item, idx) => (idx % 4 !== 0 ? item : " " + item))
+    .join("");
+};
+
+const createAccountNumber = () => {
+  let rand = Math.floor(Math.random() * 1000000000000).toString();
+  while (rand.length < 12) {
+    rand = "0" + rand;
+  }
+  let control = Math.floor(Math.random() * 2);
+  let sum = Math.floor(Math.random() * 10);
+  while (rand.length < 2) {
+    sum = "0" + sum;
+  }
+  return "PL" + sum + "10100071222" + control + rand;
+};
+for(i=0;i<10;i++) {
+  JSON.stringify({
+    "userID" : `${i}`,
+    "name" : `Imie_${i}`,
+    "surname" : `Nazwisko_1`,
+    "accountBalance" : Math.floor(Math.random()*100000),
+    "accountNumber" : createAccountNumber(),
+    "cardNumber" : createCardNumber()
+})
+}
+  
 //   db.collection("users").insertOne(myobj, function(err, res) {
 //     if (err) throw err;
 //     console.log("1 document inserted");
@@ -114,18 +128,7 @@ Driver version:	21.50.1.1
 Physical address (MAC):	3C-F0-11-AD-76-59
 
 
-const createAccountNumber = () => {
-    let rand = Math.floor(Math.random() * 1000000000000).toString();
-    while (rand.length < 12) {
-      rand = "0" + rand;
-    }
-    let control = Math.floor(Math.random() * 2);
-    let sum = Math.floor(Math.random() * 10);
-    while (rand.length < 2) {
-      sum = "0" + sum;
-    }
-    return "PL" + sum + "10100071222" + control + rand;
-  };
+
 
   const sendUpdate = (query, newVal, user) => {
     db.collection("accounts").updateOne(query, newVal, function(err, res) {

@@ -15,6 +15,7 @@ const useDefaultEmmiter = port => {
 
   const logout = () => {
     setLogin(false);
+    socket.emit("logout");
   };
 
   useEffect(() => {

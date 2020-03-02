@@ -95,7 +95,7 @@ setInterval(() => {
       user.alreadyUpdated = true;
     }
   });
-}, 2000);
+}, 1000);
 
 setInterval(() => {
   const actualRequests = [];
@@ -140,7 +140,7 @@ setInterval(() => {
     }
     request.name(request.user, ...request.params);
   });
-}, 2000);
+}, 500);
 
 const sendToQue = async (user, name, ...params) => {
   requestQueue.push({
@@ -308,6 +308,28 @@ card.on("serverLogin", async msg => {
 });
 
 atm.on("disconnect", id => {
+  buffor.delete(loginUsers[id]);
+  delete loginUsers[id];
+});
+
+atm.on("logoutServer", id => {
+  console.log(buffor);
+  console.log(loginUsers);
+  buffor.delete(loginUsers[id]);
+  delete loginUsers[id];
+});
+
+card.on("logoutServer", id => {
+  console.log(buffor);
+  console.log(loginUsers);
+  buffor.delete(loginUsers[id]);
+  delete loginUsers[id];
+});
+
+tranfers.on("logoutServer", id => {
+  console.log(buffor);
+  console.log(loginUsers);
+  buffor.delete(loginUsers[id]);
   delete loginUsers[id];
 });
 
