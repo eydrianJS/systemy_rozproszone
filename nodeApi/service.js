@@ -5,7 +5,7 @@ const mongo = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
 var app = express();
 var server = http.createServer(app);
-const api = "http://192.168.0.12";
+const api = "http://localhost";
 
 var ioSerwer = require("socket.io-client");
 var tranfers = ioSerwer.connect(`${api}:8084`, { reconnect: true });
@@ -27,7 +27,7 @@ const mainaj = () => {
         console.error(err);
         return;
       }
-      aj = client.db("aj"); //MongoClient.connect();
+      aj = client.db("Jeden"); //MongoClient.connect();
     }
   );
 };
@@ -44,7 +44,7 @@ const mainkm = () => {
         console.error(err);
         return;
       }
-      km = client.db("km"); //MongoClient.connect();
+      km = client.db("Dwa"); //MongoClient.connect();
     }
   );
 };
@@ -61,7 +61,7 @@ const mainnp = () => {
         console.error(err);
         return;
       }
-      np = client.db("np"); //MongoClient.connect();
+      np = client.db("Trzy"); //MongoClient.connect();
     }
   );
 };
@@ -78,7 +78,7 @@ const mainqz = () => {
         console.error(err);
         return;
       }
-      qz = client.db("qz"); //MongoClient.connect();
+      qz = client.db("Cztery"); //MongoClient.connect();
     }
   );
 };
@@ -172,6 +172,43 @@ const withDrawal = async (user, value, sessionID) => {
     });
   } else {
     atm.emit("transactionCancelServer", {
+      msg: "Za mało środków na koncie",
+      login: sessionID
+    });
+  }
+};
+
+const serverTransfer = async (user, value, sessionID) => {
+  if (parseInt(buffor.get(user).accountBalance) >= value) {
+    buffor.get(user).accountBalance -= value;
+    tranfers.emit("accountBallanceUpdate", {
+      ...buffor.get(user),
+      login: sessionID
+    });
+  } else {
+    tranfers.emit("transactionCancelServer", {
+      msg: "Za mało środków na koncie",
+      login: sessionID
+    });
+  }
+};
+
+const cardPay = async (user, value, cardNumber, sessionID) => {
+  if (parseInt(buffor.get(user).accountBalance) >= value) {
+    if(buffor.get(user).cardNumber === cardNumber) {
+      buffor.get(user).accountBalance -= value;
+      card.emit("accountBallanceUpdate", {
+        ...buffor.get(user),
+        login: sessionID
+      });
+    } else {
+      card.emit("transactionCancelServer", {
+        msg: "Błędny numer karty",
+        login: sessionID
+      });
+    }
+  } else {
+    card.emit("transactionCancelServer", {
       msg: "Za mało środków na koncie",
       login: sessionID
     });
@@ -288,15 +325,13 @@ atm.on("serverWithdrawal", msg => {
 
 card.on("serverPay", msg => {
   try {
-    sendToQue(cardPay, msg.id, msg.transferAmount, msg.card, "Card Pay");
+    sendToQue(loginUsers[msg.id], cardPay, msg.transferAmount, msg.card, msg.id);
   } catch (e) {}
 });
 
-
-
 tranfers.on("serverTransfer", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount, "Transfer");
+    sendToQue(loginUsers[msg.id], serverTransfer, msg.transferAmount, msg.id);
   } catch (e) {}
 });
 

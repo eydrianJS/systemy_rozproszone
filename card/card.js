@@ -24,20 +24,18 @@ io.on("connection", function(socket) {
   });
 
   socket.on("accountBallanceUpdate", function(msg) {
-    msg.socketId.forEach(element => {
-      io.to(element).emit("accountBallance", msg);
-    });
+    io.to(msg.login).emit("accountBallance", msg);
   });
 
   socket.on("pay", function(msg) {
     io.emit("serverPay", { ...msg, id: socket.id });
   });
 
-  socket.on("transactionCancel", (msg) => {
-    io.to(msg.login).emit("transactionCancel", msg);
-  })
+  socket.on("transactionCancelServer", function(msg) {
+    io.to(msg.login).emit("transactionCancel", { ...msg });
+  });
 
-  socket.on("errorLogin", (msg) => {
+  socket.on("errorLogin", msg => {
     io.to(msg.login).emit("errorLogin", msg.msg);
   });
 

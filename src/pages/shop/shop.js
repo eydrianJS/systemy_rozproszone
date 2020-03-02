@@ -5,9 +5,6 @@ import Login from "./../../components/login/login";
 import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
-import History from "../../components/historyTransaction/historyTransaction";
-import Register from '../../components/register/register';
-
 const Shop = () => {
   const [amountValue, setAmount] = useState("");
   const [cardValue, setCardValue] = useState("");
@@ -36,7 +33,6 @@ const Shop = () => {
       {!login ? (
         <div>
         <Login onChange={onChange} login={login} logout={Logout} />
-        {/* <Register login={login}/>   */}
         </div>
       ) : (
         <div className="shop-container">
@@ -60,9 +56,6 @@ const Shop = () => {
           />
             <Button click={handleCardTransfer}>Przelej</Button>
           </div>
-          {accountBallance ? (
-            <History history={accountBallance} />
-          ) : null}
         </div>
       )}{" "}
     </>

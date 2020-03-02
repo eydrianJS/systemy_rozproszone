@@ -41,9 +41,6 @@ const useDefaultEmmiter = port => {
     });
     
     socket.on("accountBallance", msg => { 
-      msg.history.sort(function(x, y) {
-        return y.date - x.date;
-      }).reverse();
       setAccountBallance(msg);
     });
   }, []);

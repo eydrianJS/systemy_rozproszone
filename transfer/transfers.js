@@ -36,6 +36,10 @@ io.on("connection", function(socket) {
     io.to(msg.login).emit("errorLogin", msg.msg);
   });
 
+  socket.on("transactionCancelServer", function(msg) {
+    io.to(msg.login).emit("transactionCancel", { ...msg });
+  });
+
   socket.on("disconnect", () => {
     io.emit("disconnect", socket.id);
   });

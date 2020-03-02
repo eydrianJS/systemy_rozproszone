@@ -5,8 +5,6 @@ import Login from "./../../components/login/login";
 import Logout from "./../../components/logout/logout"
 import useLoginEmmiter from "../../emmiters/loginEmmiter.js";
 import AccountBalance from "./../../components/accountBalance/accountBalance";
-import History from "../../components/historyTransaction/historyTransaction";
-import Register from '../../components/register/register';
 
 const Account = () => {
   const [accountValue, setAccountValue] = useState("");
@@ -33,7 +31,6 @@ const Account = () => {
       {!login ? (
         <div>
         <Login onChange={onChange} login={login} logout={logout} />
-        {/* <Register login={login}/> */}
         </div>
       ) : (
         <div className="account-contanier">
@@ -51,7 +48,6 @@ const Account = () => {
             onChange={handleChangeAccount}
           />
           <Button click={handleTransfer}>przelej</Button>
-          {accountBallance ? <History history={accountBallance} /> : null}
         </div>
       )}{" "}
     </>
