@@ -101,8 +101,8 @@ setInterval(() => {
   const actualRequests = [];
   let valid = true;
   buffor.forEach((value, key) => {
-    valid = value.alreadyUpdated? valid: false;
-  })
+    valid = value.alreadyUpdated ? valid : false;
+  });
   if (!valid) return;
 
   const maxRequest = 10;
@@ -111,8 +111,9 @@ setInterval(() => {
     if (requestQueue.length > 0) {
       actualRequests.push(requestQueue[0]);
       requestQueue.shift();
+    } else {
+      break;
     }
-    break;
   }
 
   let toRemove = [];
@@ -134,9 +135,9 @@ setInterval(() => {
 
   actualRequests.forEach(request => {
     if (!request.userInsideBuffor) {
-      buffor.push(getUser(request.user));
+      let databaseUser = getUser(request.user);
+      buffor.set(request.user, { ...databaseUser, alreadyUpdated: false });
     }
-    console.log(request);
     request.name(request.user, ...request.params);
   });
 }, 2000);
@@ -153,9 +154,28 @@ const sendToQue = async (user, name, ...params) => {
   }
 };
 
+const deposite = async (user, value, sessionID) => {
+  let accountBal = parseInt(buffor.get(user).accountBalance);
+  buffor.get(user).accountBalance = accountBal += parseInt(value);
+  atm.emit("accountBallanceUpdate", {
+    ...buffor.get(user),
+    login: sessionID
+  });
+};
 
-const deposite = async (user, value) => {
-  buffor.get(user).accountBalance += value;
+const withDrawal = async (user, value, sessionID) => {
+  if (parseInt(buffor.get(user).accountBalance) >= value) {
+    buffor.get(user).accountBalance -= value;
+    atm.emit("accountBallanceUpdate", {
+      ...buffor.get(user),
+      login: sessionID
+    });
+  } else {
+    atm.emit("transactionCancelServer", {
+      msg: "Za mało środków na koncie",
+      login: sessionID
+    });
+  }
 };
 
 app.use(cors());
@@ -186,7 +206,7 @@ const getUser = async id => {
 const updateUser = id => {
   let db = getDatabase(id);
   let query = { userID: id };
-  let newVal = {$set: { accountBalance: buffor.get(id).accountBalance }};
+  let newVal = { $set: { accountBalance: buffor.get(id).accountBalance } };
   db.collection("users").updateOne(query, newVal, function(err, res) {
     if (err) throw err;
     console.log(res.result.nModified + " document(s) updated");
@@ -201,11 +221,49 @@ atm.on("serverLogin", async msg => {
     loginUsers[msg.id] = user.userID;
     atm.emit("accountBallanceUpdate", {
       ...user,
-      socketId: msg.id
+      login: msg.id
     });
     atm.emit("serverLoginResponse", { ...user, login: msg.id });
   } else {
     atm.emit("errorLogin", {
+      msg: "Login or password is incorrect",
+      login: msg.id
+    });
+  }
+});
+
+tranfers.on("serverLogin", async msg => {
+  let id = msg.username;
+  let user = await getUser(id);
+
+  if (user) {
+    loginUsers[msg.id] = user.userID;
+    tranfers.emit("accountBallanceUpdate", {
+      ...user,
+      login: msg.id
+    });
+    tranfers.emit("serverLoginResponse", { ...user, login: msg.id });
+  } else {
+    tranfers.emit("errorLogin", {
+      msg: "Login or password is incorrect",
+      login: msg.id
+    });
+  }
+});
+
+card.on("serverLogin", async msg => {
+  let id = msg.username;
+  let user = await getUser(id);
+
+  if (user) {
+    loginUsers[msg.id] = user.userID;
+    card.emit("accountBallanceUpdate", {
+      ...user,
+      login: msg.id
+    });
+    card.emit("serverLoginResponse", { ...user, login: msg.id });
+  } else {
+    card.emit("errorLogin", {
       msg: "Login or password is incorrect",
       login: msg.id
     });
@@ -218,45 +276,14 @@ atm.on("disconnect", id => {
 
 atm.on("serverDeposite", msg => {
   try {
-    // console.log(loginUsers[msg.id]);
-    sendToQue(loginUsers[msg.id], deposite, msg.transferAmount);
+    sendToQue(loginUsers[msg.id], deposite, msg.transferAmount, msg.id);
   } catch (e) {}
 });
 
 atm.on("serverWithdrawal", msg => {
   try {
-    sendToQue(withDrawal, msg.id, msg.transferAmount, "Withdral");
+    sendToQue(loginUsers[msg.id], withDrawal, msg.transferAmount, msg.id);
   } catch (e) {}
-});
-
-card.on("serverLogin", async msg => {
-  let user = await db
-    .collection("users")
-    .findOne({ username: msg.username, password: msg.password });
-  if (user) {
-    let account = await db
-      .collection("accounts")
-      .findOne({ _id: new ObjectID(user.accounts[0]) });
-    user.socketId = [];
-    Object.entries(loginUsers).forEach(([key, val]) => {
-      if (account.accountNumber === val.accountNumber) {
-        loginUsers[key].socketId.push(msg.id);
-        user.socketId = loginUsers[key].socketId;
-      }
-    });
-    user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account };
-    card.emit("accountBallanceUpdate", {
-      ...account,
-      socketId: loginUsers[msg.id].socketId
-    });
-    card.emit("serverLoginResponse", { ...loginUsers[msg.id], login: msg.id });
-  } else {
-    card.emit("errorLogin", {
-      msg: "Login or password is incorrect",
-      login: msg.id
-    });
-  }
 });
 
 card.on("serverPay", msg => {
@@ -265,38 +292,7 @@ card.on("serverPay", msg => {
   } catch (e) {}
 });
 
-tranfers.on("serverLogin", async msg => {
-  let user = await db
-    .collection("users")
-    .findOne({ username: msg.username, password: msg.password });
-  if (user) {
-    let account = await db
-      .collection("accounts")
-      .findOne({ _id: new ObjectID(user.accounts[0]) });
-    user.socketId = [];
-    Object.entries(loginUsers).forEach(([key, val]) => {
-      if (account.accountNumber === val.accountNumber) {
-        loginUsers[key].socketId.push(msg.id);
-        user.socketId = loginUsers[key].socketId;
-      }
-    });
-    user.socketId.push(msg.id);
-    loginUsers[msg.id] = { ...user, ...account };
-    tranfers.emit("accountBallanceUpdate", {
-      ...account,
-      socketId: loginUsers[msg.id].socketId
-    });
-    tranfers.emit("serverLoginResponse", {
-      ...loginUsers[msg.id],
-      login: msg.id
-    });
-  } else {
-    tranfers.emit("errorLogin", {
-      msg: "Login or password is incorrect",
-      login: msg.id
-    });
-  }
-});
+
 
 tranfers.on("serverTransfer", msg => {
   try {

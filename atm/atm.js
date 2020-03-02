@@ -29,8 +29,13 @@ io.on("connect", function(socket) {
   socket.on("withdrawal", function(msg) {
     io.emit("serverWithdrawal", { ...msg, id: socket.id });
   });
+  
+  socket.on("transactionCancelServer", function(msg) {
+    io.to(msg.login).emit("transactionCancel", { ...msg });
+  });
 
   socket.on("accountBallanceUpdate", function(msg) {
+    console.log(msg);
       io.to(msg.login).emit("accountBallance", msg);
   });
 

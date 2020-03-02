@@ -15,6 +15,7 @@ app.use((req, res, next) => {
 });
 
 io.on("connection", function(socket) {
+
   socket.on("login", function(msg) {
     io.emit("serverLogin", { ...msg, id: socket.id });
   });
@@ -24,9 +25,7 @@ io.on("connection", function(socket) {
   });
 
   socket.on("accountBallanceUpdate", function(msg) {
-    msg.socketId.forEach(element => {
-      io.to(element).emit("accountBallance", msg);
-    });
+    io.to(msg.login).emit("accountBallance", msg);
   });
 
   socket.on("transfer", function(msg) {
