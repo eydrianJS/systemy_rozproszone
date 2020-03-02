@@ -195,7 +195,7 @@ const serverTransfer = async (user, value, sessionID) => {
 
 const cardPay = async (user, value, cardNumber, sessionID) => {
   if (parseInt(buffor.get(user).accountBalance) >= value) {
-    if(buffor.get(user).cardNumber === cardNumber) {
+    if(buffor.get(user).cardNumber.trim() === cardNumber.trim()) {
       buffor.get(user).accountBalance -= value;
       card.emit("accountBallanceUpdate", {
         ...buffor.get(user),
